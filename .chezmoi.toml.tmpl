@@ -5,12 +5,12 @@ run_once_after_20-theme.sh.tmpl).
 `machine` is a machine PROFILE LABEL — deliberately NOT the hostname.
 It is a stable, human-chosen key that selects the matching block in
 per-machine templates. Hostnames can change (reinstalls, DHCP, cloning);
-this label is set once per machine and travels in ~/.config/chezmoi/chezmoi.toml.
-Two machines may share a label only if their hardware config is identical.
+this label is set once per machine and lives in ~/.config/chezmoi/chezmoi.toml
+(untracked). Two machines may share a label only if their hardware config is
+identical. The answer is normalized to lowercase so prompts stay forgiving.
+Keep defaults in sync with README.md §5. */ -}}
 
-Defaults keep the prompts one-Enter quick. */ -}}
-
-{{- $machine := promptStringOnce . "machine" "Machine profile label (e.g. desktop, laptop, studio)" "desktop" -}}
+{{- $machine := promptStringOnce . "machine" "Machine profile label (e.g. desktop, laptop, studio)" "desktop" | lower -}}
 {{- $themeName := promptStringOnce . "themeName" "Omarchy theme to apply on setup" "matte-black" -}}
 
 [data]

@@ -1,13 +1,15 @@
 #!/bin/bash
 # run_once_after_30-mise.sh
-# Installs every tool pinned in the tracked ~/.config/mise/config.toml
-# (chezmoi itself is one of those tools — see mise config).
-# Assumes mise is installed. On a fresh Omarchy machine:
-#   omarchy pkg add mise      (or: curl https://mise.run | sh)
+# Installs the tools declared in the tracked ~/.config/mise/config.toml
+# (chezmoi itself is one of those tools — it is installed through mise).
+#
+# mise ships with Omarchy (package: mise-bin), so this normally finds mise
+# already present. Runs once per content-hash; `mise install` is a no-op when
+# everything is current.
 set -u
 
 if ! command -v mise >/dev/null 2>&1; then
-  echo "!! mise not found — install it first: omarchy pkg add mise"
+  echo "!! mise not found — install it first: omarchy pkg add mise-bin (or: curl https://mise.run | sh)"
   exit 0  # bootstrap scripts must never break `chezmoi apply`
 fi
 

@@ -11,31 +11,38 @@
 --           machine = "desktop"
 --   Only the block matching this machine's profile is rendered into
 --   ~/.config/hypr/monitors.lua; all other blocks are stripped. A machine
---   whose profile has no dedicated block falls through to the generic
---   fallback at the bottom, so a fresh machine always boots working.
+--   whose profile has no dedicated block (or an unset key) falls through to
+--   the generic fallback at the bottom, so a fresh machine always boots with
+--   a working display config.
 --
 -- ADDING A NEW MACHINE (human or agent) — full guide: README.md §5
 --   1. On the new machine:  hyprctl monitors all      (note outputs/modes)
---   2. Set the profile:     edit ~/.config/chezmoi/chezmoi.toml →
+--   2. Set the profile:     ~/.config/chezmoi/chezmoi.toml →
 --                           [data] machine = "<label>"
 --   3. Edit the template:   chezmoi edit ~/.config/hypr/monitors.lua
---   4. Add a block for <label>, same style as the "desktop" block:
+--   4. Add a block for <label>, same style as the "desktop" block, INSERTED
+--      ABOVE the generic {{"{{"}} else {{"}}"}} fallback at the bottom — an
+--      "else if" placed after "else" is a template parse error and
+--      chezmoi apply will refuse to render:
 --        {{"{{"}} else if eq .machine "<label>" {{"}}"}}
 --        hl.monitor({ output = "...", mode = "preferred", position = "0x0", scale = 1 })
---      (the escapes above render as literal double braces in the output file)
+--      (the escaped-brace forms above render as literal double braces)
 --   5. Render + reload:     chezmoi apply ~/.config/hypr/monitors.lua
 --   6. Validate:            hyprctl configerrors        (must print nothing)
---   7. Sync:                chezmoi re-add && chezmoi git -- add -A
+--   7. Sync:                chezmoi git -- add -A
 --                           && chezmoi git -- commit -m "monitors: <label>"
+--      (do NOT use `chezmoi re-add` for THIS file — see next section)
 --
 -- WHEN OMARCHY REWRITES THE RENDERED FILE (update/refresh)
 --   chezmoi diff      → see what Omarchy changed
---   chezmoi re-add    → adopt Omarchy's change into THIS template (edit here!)
---   chezmoi apply     → or reject it and restore yours
+--   ⚠ `chezmoi re-add` will NOT adopt changes for this file — chezmoi refuses
+--     to overwrite templates. Reconcile by hand:
+--       chezmoi edit ~/.config/hypr/monitors.lua   (opens THIS template)
+--       chezmoi apply ~/.config/hypr/monitors.lua
 --   (the post-update hook will have notified you about the drift)
 -- ═══════════════════════════════════════════════════════════════════════════
 
-{{ if eq .machine "desktop" }}
+{{ if eq (index . "machine" | default "") "desktop" }}
 -- desktop: TV on top (HDMI), main monitor below (Samsung 144Hz via DP)
 -- Both displays are 1080p, so use 1x scaling.
 hl.env("GDK_SCALE", "1")

@@ -4,11 +4,16 @@
 # Contract (by design):
 #   * NEVER applies changes (chezmoi apply is a human decision)
 #   * NEVER fails — any error, missing tool, or un-initialized repo exits 0
-#   * Only HIGHLIGHTS drift: desktop notification + a full diff on disk
+#   * Only HIGHLIGHTS drift: desktop notification + a reviewable diff on disk
 #
-# Drift = a live file in ~/.config differs from your chezmoi source
-# (~/.local/share/chezmoi). Typical cause: an `omarchy update` migration or
-# `omarchy refresh` rewrote a managed file.
+# Drift = a managed file on disk differs from the chezmoi source
+# (~/.local/share/chezmoi). Causes: omarchy update migrations, omarchy refresh,
+# or your own edits that were never `chezmoi re-add`ed — chezmoi cannot tell
+# them apart, so treat the notification as "review me", not "Omarchy broke it".
+#
+# NOTE: this hook fires only after `omarchy update`. `omarchy refresh <app>`
+# runs no hooks — check `chezmoi diff` manually after a refresh. Test anytime:
+#   omarchy hook post-update
 
 set +e  # nothing in this hook may fail the update
 
@@ -16,22 +21,28 @@ set +e  # nothing in this hook may fail the update
 command -v chezmoi >/dev/null 2>&1 || exit 0
 [ -d "$HOME/.local/share/chezmoi/.git" ] || exit 0
 
-# Count changed targets (git-style one line per changed file).
+# Count changed targets (one line per changed file; also counts your own
+# unre-add'ed edits — see note above).
 changed="$(chezmoi status 2>/dev/null | wc -l)"
-case "$changed" in
-  ''|0) exit 0 ;;
-esac
+[ "${changed:-0}" -ge 1 ] 2>/dev/null || exit 0
 
-# Persist the full reviewable diff.
+# Persist a reviewable diff (name = timestamp + PID so rapid updates never
+# overwrite each other).
 log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/chezmoi-drift"
 mkdir -p "$log_dir" 2>/dev/null
-log_file="$log_dir/$(date +%Y%m%d-%H%M%S).diff"
+log_file="$log_dir/$(date +%Y%m%d-%H%M%S)-$$.diff"
 chezmoi diff > "$log_file" 2>/dev/null
 
-# Highlight only — never apply.
+# Highlight only — never apply. If the diff file came out empty (e.g. state
+# lock contention), point at the manual command instead of an empty file.
+if [ -s "$log_file" ]; then
+  detail="Diff saved to $log_file"
+else
+  detail="Run 'chezmoi diff' to review"
+fi
 notify-send -a "Omarchy" \
-  "chezmoi drift after update" \
-  "$changed managed file(s) changed by Omarchy. Review: chezmoi diff   (diff saved to $log_file)" \
+  "chezmoi drift detected" \
+  "$changed managed file(s) differ from your dotfiles source. $detail" \
   >/dev/null 2>&1
 
 exit 0

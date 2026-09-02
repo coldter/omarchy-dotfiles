@@ -1,10 +1,11 @@
-# Manual packages — repo packages installed on top of Omarchy's defaults.
+# Packages from the official Arch repos (pacman), on top of Omarchy's defaults.
 # Consumed by run_once_after_10-packages.sh via `omarchy pkg add` (idempotent:
 # already-installed packages are skipped). One package per line, # = comment.
 #
-# RULE: only add packages that are NOT part of Omarchy's default install.
-# Anything Omarchy ships (alacritty, ghostty, fd, bat, eza, docker, herdr,
-# aether, …) must NOT be listed here — Omarchy brings it on every machine.
+# RULE: only add packages that are NOT part of Omarchy's default install —
+# check /usr/share/omarchy/install/omarchy-*.packages first. Anything Omarchy
+# ships (alacritty, ghostty, fd, bat, eza, docker, mise-bin, …) must NOT be
+# listed here: Omarchy brings it on every machine anyway.
 
 # --- Editors / IDEs ---------------------------------------------------------
 visual-studio-code-bin
@@ -19,15 +20,10 @@ qbittorrent
 rust
 dotnet-runtime-9.0
 xmlstarlet
-docker-compose
 
 # --- Utilities --------------------------------------------------------------
-asdcontrol
-cliamp
-gpu-screen-recorder
-imv
-libqalculate
 ntfs-3g
+libqalculate
 github-cli
 fwupd
 blueman

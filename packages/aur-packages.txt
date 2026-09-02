@@ -1,6 +1,9 @@
-# Manual packages — AUR packages installed on top of Omarchy's defaults.
+# AUR packages, on top of Omarchy's defaults.
 # Consumed by run_once_after_10-packages.sh via `omarchy pkg aur add`
-# (idempotent). One package per line, # = comment.
+# (idempotent: already-installed packages are skipped). One per line, # = comment.
+#
+# RULE: only add packages that are NOT part of Omarchy's default install —
+# check /usr/share/omarchy/install/omarchy-*.packages first.
 
 brave-bin
 brave-origin-bin
