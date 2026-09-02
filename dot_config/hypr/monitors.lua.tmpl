@@ -5,31 +5,38 @@
 -- MACHINE-SPECIFIC FILE — this is a CHEZMOI TEMPLATE, not a plain config.
 --
 -- HOW IT WORKS
---   Only the block whose hostname matches THIS machine (set during
---   `chezmoi init` and stored in ~/.config/chezmoi/chezmoi.toml under
---   [data] hostname = "...") is rendered into ~/.config/hypr/monitors.lua.
---   Every other block is stripped. Unknown hostnames fall back to the
---   generic block at the bottom, so a new machine always boots with a
---   working display config.
+--   Blocks are keyed on the `machine` profile variable — NOT the hostname.
+--   It is set once per machine in ~/.config/chezmoi/chezmoi.toml:
+--       [data]
+--           machine = "desktop"
+--   Only the block matching this machine's profile is rendered into
+--   ~/.config/hypr/monitors.lua; all other blocks are stripped. A machine
+--   whose profile has no dedicated block falls through to the generic
+--   fallback at the bottom, so a fresh machine always boots working.
 --
--- ADDING A NEW MACHINE (human or agent) — full copy-paste guide: README.md §5
---   1. On the new machine:   hyprctl monitors all     (note outputs/modes)
---   2. Edit the template:    chezmoi edit ~/.config/hypr/monitors.lua
---   3. Add a new hostname block in the same style as the "kuldeep" block
---      below: an "else if" branch keyed on this machine's data.hostname.
---   4. Render + reload:      chezmoi apply ~/.config/hypr/monitors.lua
---   5. Save & sync:          chezmoi re-add && chezmoi git -- add -A
---                            && chezmoi git -- commit -m "monitors: NEW-HOSTNAME"
+-- ADDING A NEW MACHINE (human or agent) — full guide: README.md §5
+--   1. On the new machine:  hyprctl monitors all      (note outputs/modes)
+--   2. Set the profile:     edit ~/.config/chezmoi/chezmoi.toml →
+--                           [data] machine = "<label>"
+--   3. Edit the template:   chezmoi edit ~/.config/hypr/monitors.lua
+--   4. Add a block for <label>, same style as the "desktop" block:
+--        {{"{{"}} else if eq .machine "<label>" {{"}}"}}
+--        hl.monitor({ output = "...", mode = "preferred", position = "0x0", scale = 1 })
+--      (the escapes above render as literal double braces in the output file)
+--   5. Render + reload:     chezmoi apply ~/.config/hypr/monitors.lua
+--   6. Validate:            hyprctl configerrors        (must print nothing)
+--   7. Sync:                chezmoi re-add && chezmoi git -- add -A
+--                           && chezmoi git -- commit -m "monitors: <label>"
 --
 -- WHEN OMARCHY REWRITES THE RENDERED FILE (update/refresh)
 --   chezmoi diff      → see what Omarchy changed
 --   chezmoi re-add    → adopt Omarchy's change into THIS template (edit here!)
---   chezmoi apply     → or reject it and restore your version
+--   chezmoi apply     → or reject it and restore yours
 --   (the post-update hook will have notified you about the drift)
 -- ═══════════════════════════════════════════════════════════════════════════
 
-{{ if eq .hostname "kuldeep" }}
--- kuldeep (desktop): TV on top (HDMI), main monitor below (Samsung 144Hz via DP)
+{{ if eq .machine "desktop" }}
+-- desktop: TV on top (HDMI), main monitor below (Samsung 144Hz via DP)
 -- Both displays are 1080p, so use 1x scaling.
 hl.env("GDK_SCALE", "1")
 
@@ -43,10 +50,10 @@ for workspace = 2, 10 do
   hl.workspace_rule({ workspace = tostring(workspace), monitor = "DP-2" })
 end
 {{ else }}
--- ▼▼ GENERIC FALLBACK — rendered on machines whose hostname has no block above ▼▼
--- Replace with this machine's real outputs (hyprctl monitors all), then add a
--- dedicated hostname block above and set [data] hostname in
--- ~/.config/chezmoi/chezmoi.toml so it matches.
+-- ▼▼ GENERIC FALLBACK — rendered when no block matches this machine's profile ▼▼
+-- Replace with this machine's real outputs (hyprctl monitors all), then set
+-- [data] machine in ~/.config/chezmoi/chezmoi.toml and add a dedicated block
+-- above (see README.md §5).
 hl.env("GDK_SCALE", "1")
 hl.monitor({ output = "eDP-1", mode = "preferred", position = "0x0", scale = 1 })
 {{ end }}

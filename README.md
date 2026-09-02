@@ -75,7 +75,7 @@ mise install chezmoi          # version pinned by dot_config/mise/config.toml
 
 # 3. Deploy everything:
 chezmoi init --apply coldter/omarchy-dotfiles
-#    → prompts: machine hostname (Enter = current) + theme (Enter = matte-black)
+#    → prompts: machine profile label (Enter = desktop) + theme (Enter = matte-black)
 #    → renders per-host templates, copies all configs,
 #    → run_once scripts fire: packages install, theme applies, mise tools install
 
@@ -128,21 +128,34 @@ chezmoi re-add && chezmoi git -- add -A && chezmoi git -- commit -m "mise: <tool
 ## 5. Machine-specific config: `monitors.lua.tmpl`
 
 `dot_config/hypr/monitors.lua.tmpl` is the only templated config. It contains one
-Lua block per machine hostname; chezmoi renders **only the matching block** into
-`~/.config/hypr/monitors.lua`. Unknown hostnames get the generic fallback block,
-so a fresh machine always boots with a working display config.
+Lua block per **machine profile**; chezmoi renders **only the matching block**
+into `~/.config/hypr/monitors.lua`. Unknown profiles get the generic fallback
+block, so a fresh machine always boots with a working display config.
 
-To add machine `laptop-2`:
+**Conditionals key on the `machine` profile variable — never the hostname.**
+Hostnames change (reinstalls, DHCP, cloned VMs); the profile label is a stable,
+human-chosen key set once per machine in `~/.config/chezmoi/chezmoi.toml`:
+
+```toml
+[data]
+    machine = "desktop"     # ← this machine's profile label
+    themeName = "matte-black"
+```
+
+Two machines may share a label only if their hardware config is identical.
+
+To add machine with profile `laptop`:
 
 1. On that machine: `hyprctl monitors all` (outputs, modes, positions)
-2. Edit the template: `chezmoi edit ~/.config/hypr/monitors.lua`
-3. Insert a block: `{{ else if eq .hostname "laptop-2" }} … your hl.monitor() lines …`
-4. Render + reload: `chezmoi apply ~/.config/hypr/monitors.lua`
-5. Commit: `chezmoi git -- add -A && chezmoi git -- commit -m "monitors: laptop-2"`
+2. Set its profile: `~/.config/chezmoi/chezmoi.toml` → `[data] machine = "laptop"`
+3. Edit the template: `chezmoi edit ~/.config/hypr/monitors.lua`
+4. Insert a block: `{{ else if eq .machine "laptop" }} … your hl.monitor() lines …`
+5. Render + reload: `chezmoi apply ~/.config/hypr/monitors.lua`
+6. Validate: `hyprctl configerrors` (must print nothing)
+7. Commit: `chezmoi git -- add -A && chezmoi git -- commit -m "monitors: laptop"`
 
-The hostname comes from `~/.config/chezmoi/chezmoi.toml` `[data] hostname`
-(prompted during `chezmoi init`). Other per-machine deltas (input.lua, autostart)
-can become templates the same way — only do it when machines actually diverge.
+Other per-machine deltas (input.lua, autostart) can become templates keyed on
+`.machine` the same way — only do it when machines actually diverge.
 
 ## 6. Themes
 
@@ -172,18 +185,22 @@ particular **Status Check (§1)**, **Safe Update / diff-before-apply (§13)** an
 
 Operating rules when working on this machine's dotfiles:
 
-1. Source of truth edits happen via the live files + `chezmoi re-add`
+1. **Read and follow the vendored skill** `.agents/skills/chezmoi-workflows/SKILL.md`
+   (status → diff → explicit re-add/apply → verify; never blind-apply).
+2. Source of truth edits happen via the live files + `chezmoi re-add`
    (or `chezmoi edit <target>`, which edits source and applies on save).
-2. **Never** edit rendered output of `*.tmpl` files directly
+3. **Never** edit rendered output of `*.tmpl` files directly
    (`~/.config/hypr/monitors.lua`) — edit the template in source.
-3. After any Omarchy update/refresh: run `chezmoi diff`, report the drift to the
+4. Per-machine conditionals key on the `[data] machine` profile variable —
+   **never on hostname**. Set it in `~/.config/chezmoi/chezmoi.toml` (untracked).
+5. After any Omarchy update/refresh: run `chezmoi diff`, report the drift to the
    user, then `chezmoi re-add` (adopt) or `chezmoi apply` (reject) per their call.
    Never apply/revert without asking.
-4. New files belong in the tracked set only after the user confirms they're
+6. New files belong in the tracked set only after the user confirms they're
    wanted on every machine (zone 3/4 only — see §1).
-5. Validate Hyprland changes: `hyprctl reload && hyprctl configerrors` (must be empty).
-6. Commit messages: short, lowercase prefix (`pkg:`, `mise:`, `monitors:`, `hypr:`, `omarchy:`).
-7. The drift hook must always exit 0 and never apply changes — keep it that way.
+7. Validate Hyprland changes: `hyprctl reload && hyprctl configerrors` (must be empty).
+8. Commit messages: short, lowercase prefix (`pkg:`, `mise:`, `monitors:`, `hypr:`, `omarchy:`).
+9. The drift hook must always exit 0 and never apply changes — keep it that way.
 
 ## 9. Troubleshooting
 
