@@ -71,7 +71,7 @@ omarchy pkg add mise
 mise install chezmoi          # version pinned by dot_config/mise/config.toml
 
 # 3. Deploy everything:
-chezmoi init --apply coldter/dotfiles
+chezmoi init --apply coldter/omarchy-dotfiles
 #    → prompts: machine hostname (Enter = current) + theme (Enter = matte-black)
 #    → renders per-host templates, copies all configs,
 #    → run_once scripts fire: packages install, theme applies, mise tools install
