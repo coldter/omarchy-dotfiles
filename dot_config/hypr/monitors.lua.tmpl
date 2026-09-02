@@ -24,7 +24,7 @@
 --      ABOVE the generic {{"{{"}} else {{"}}"}} fallback at the bottom — an
 --      "else if" placed after "else" is a template parse error and
 --      chezmoi apply will refuse to render:
---        {{"{{"}} else if eq .machine "<label>" {{"}}"}}
+--        {{"{{"}} else if eq (index . "machine" | default "") "<label>" {{"}}"}}
 --        hl.monitor({ output = "...", mode = "preferred", position = "0x0", scale = 1 })
 --      (the escaped-brace forms above render as literal double braces)
 --   5. Render + reload:     chezmoi apply ~/.config/hypr/monitors.lua

@@ -232,7 +232,9 @@ To add a machine with profile `laptop`:
 4. Insert a block **above** the generic `{{ else }}` fallback at the bottom of
    the file — an `else if` placed *after* `else` is a template parse error and
    `chezmoi apply` will refuse to render:
-   `{{ else if eq .machine "laptop" }}` followed by your `hl.monitor()` lines
+   `{{ else if eq (index . "machine" | default "") "laptop" }}` followed by your `hl.monitor()` lines
+   (the `index … | default ""` guard means a machine with no `[data] machine` set
+   still renders the generic fallback instead of hard-failing `chezmoi apply`)
 5. Render + reload: `chezmoi apply ~/.config/hypr/monitors.lua`
 6. Validate: `hyprctl configerrors` (must print nothing)
 7. Commit: `chezmoi git -- add -A && chezmoi git -- commit -m "monitors: laptop"`
