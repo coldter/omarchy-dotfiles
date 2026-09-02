@@ -1,0 +1,3 @@
+# Source-only files: kept in the repo, never applied into $HOME.
+README.md
+packages

@@ -1,0 +1,52 @@
+-- See https://wiki.hypr.land/Configuring/Basics/Monitors/
+-- List current monitors and supported resolutions with: hyprctl monitors all
+--
+-- ═══════════════════════════════════════════════════════════════════════════
+-- MACHINE-SPECIFIC FILE — this is a CHEZMOI TEMPLATE, not a plain config.
+--
+-- HOW IT WORKS
+--   Only the block whose hostname matches THIS machine (set during
+--   `chezmoi init` and stored in ~/.config/chezmoi/chezmoi.toml under
+--   [data] hostname = "...") is rendered into ~/.config/hypr/monitors.lua.
+--   Every other block is stripped. Unknown hostnames fall back to the
+--   generic block at the bottom, so a new machine always boots with a
+--   working display config.
+--
+-- ADDING A NEW MACHINE (human or agent) — full copy-paste guide: README.md §5
+--   1. On the new machine:   hyprctl monitors all     (note outputs/modes)
+--   2. Edit the template:    chezmoi edit ~/.config/hypr/monitors.lua
+--   3. Add a new hostname block in the same style as the "kuldeep" block
+--      below: an "else if" branch keyed on this machine's data.hostname.
+--   4. Render + reload:      chezmoi apply ~/.config/hypr/monitors.lua
+--   5. Save & sync:          chezmoi re-add && chezmoi git -- add -A
+--                            && chezmoi git -- commit -m "monitors: NEW-HOSTNAME"
+--
+-- WHEN OMARCHY REWRITES THE RENDERED FILE (update/refresh)
+--   chezmoi diff      → see what Omarchy changed
+--   chezmoi re-add    → adopt Omarchy's change into THIS template (edit here!)
+--   chezmoi apply     → or reject it and restore your version
+--   (the post-update hook will have notified you about the drift)
+-- ═══════════════════════════════════════════════════════════════════════════
+
+{{ if eq .hostname "kuldeep" }}
+-- kuldeep (desktop): TV on top (HDMI), main monitor below (Samsung 144Hz via DP)
+-- Both displays are 1080p, so use 1x scaling.
+hl.env("GDK_SCALE", "1")
+
+hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@60", position = "0x0", scale = 1 })
+hl.monitor({ output = "DP-2", mode = "preferred", position = "0x1080", scale = 1 })
+
+-- Lock workspace 1 to the top monitor only; it never gets another workspace.
+-- All other workspaces (2-10) live on the bottom monitor and cycle freely there.
+hl.workspace_rule({ workspace = "1", monitor = "HDMI-A-1", persistent = true })
+for workspace = 2, 10 do
+  hl.workspace_rule({ workspace = tostring(workspace), monitor = "DP-2" })
+end
+{{ else }}
+-- ▼▼ GENERIC FALLBACK — rendered on machines whose hostname has no block above ▼▼
+-- Replace with this machine's real outputs (hyprctl monitors all), then add a
+-- dedicated hostname block above and set [data] hostname in
+-- ~/.config/chezmoi/chezmoi.toml so it matches.
+hl.env("GDK_SCALE", "1")
+hl.monitor({ output = "eDP-1", mode = "preferred", position = "0x0", scale = 1 })
+{{ end }}

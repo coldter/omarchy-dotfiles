@@ -1,0 +1,26 @@
+# Omarchy environment (OMARCHY_PATH + PATH), needed even for non-interactive shells
+[[ -r /usr/share/omarchy/default/bash/env-bootstrap ]] && source /usr/share/omarchy/default/bash/env-bootstrap
+
+# If not running interactively, don't do anything else (leave this above the rc source)
+[[ $- != *i* ]] && return
+
+# All the default Omarchy aliases and functions
+# (don't mess with these directly, just overwrite them here!)
+source "$OMARCHY_PATH/default/bash/rc"
+
+# Add your own exports, aliases, and functions here.
+#
+# Make an alias for invoking commands you use constantly
+alias p='python'
+alias cat='bat'
+
+# opencode: stable (mise opencode = v1) vs v2 beta (mise npm:@opencode-ai/cli@beta -> opencode2)
+# opencode       -> stable v1 (1.18.23, `opencode --version`)
+# opencode-beta  -> v2 beta (0.0.0-beta-18414, `opencode2 --version` via npm)
+# oc / ocb shorthands
+alias opencode-beta='opencode2'
+alias oc='opencode'
+alias ocb='opencode2'
+
+# mise: project tools (re-shell)
+eval "$(mise activate bash)"

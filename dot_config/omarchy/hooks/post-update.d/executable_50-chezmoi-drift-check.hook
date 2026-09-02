@@ -1,0 +1,37 @@
+#!/bin/bash
+# chezmoi drift check — runs after every `omarchy update` via post-update.d.
+#
+# Contract (by design):
+#   * NEVER applies changes (chezmoi apply is a human decision)
+#   * NEVER fails — any error, missing tool, or un-initialized repo exits 0
+#   * Only HIGHLIGHTS drift: desktop notification + a full diff on disk
+#
+# Drift = a live file in ~/.config differs from your chezmoi source
+# (~/.local/share/chezmoi). Typical cause: an `omarchy update` migration or
+# `omarchy refresh` rewrote a managed file.
+
+set +e  # nothing in this hook may fail the update
+
+# Bail out silently when chezmoi is not installed or source repo is missing.
+command -v chezmoi >/dev/null 2>&1 || exit 0
+[ -d "$HOME/.local/share/chezmoi/.git" ] || exit 0
+
+# Count changed targets (git-style one line per changed file).
+changed="$(chezmoi status 2>/dev/null | wc -l)"
+case "$changed" in
+  ''|0) exit 0 ;;
+esac
+
+# Persist the full reviewable diff.
+log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/chezmoi-drift"
+mkdir -p "$log_dir" 2>/dev/null
+log_file="$log_dir/$(date +%Y%m%d-%H%M%S).diff"
+chezmoi diff > "$log_file" 2>/dev/null
+
+# Highlight only — never apply.
+notify-send -a "Omarchy" \
+  "chezmoi drift after update" \
+  "$changed managed file(s) changed by Omarchy. Review: chezmoi diff   (diff saved to $log_file)" \
+  >/dev/null 2>&1
+
+exit 0

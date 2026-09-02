@@ -1,0 +1,34 @@
+# Manual packages — repo packages installed on top of Omarchy's defaults.
+# Consumed by run_once_after_10-packages.sh via `omarchy pkg add` (idempotent:
+# already-installed packages are skipped). One package per line, # = comment.
+#
+# RULE: only add packages that are NOT part of Omarchy's default install.
+# Anything Omarchy ships (alacritty, ghostty, fd, bat, eza, docker, herdr,
+# aether, …) must NOT be listed here — Omarchy brings it on every machine.
+
+# --- Editors / IDEs ---------------------------------------------------------
+visual-studio-code-bin
+zed
+typora
+
+# --- Desktop apps -----------------------------------------------------------
+signal-desktop
+qbittorrent
+
+# --- Dev toolchains ---------------------------------------------------------
+rust
+dotnet-runtime-9.0
+xmlstarlet
+docker-compose
+
+# --- Utilities --------------------------------------------------------------
+asdcontrol
+cliamp
+gpu-screen-recorder
+imv
+libqalculate
+ntfs-3g
+github-cli
+fwupd
+blueman
+baobab

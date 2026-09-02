@@ -1,0 +1,10 @@
+{{- /* Runs once per machine during `chezmoi init`. Prompts for per-machine
+data used by templates (e.g. dot_config/hypr/monitors.lua.tmpl and
+run_once_after_20-theme.sh.tmpl). Defaults keep the prompts one-Enter quick. */ -}}
+
+{{- $hostname := promptStringOnce . "hostname" "Machine hostname" .chezmoi.hostname -}}
+{{- $themeName := promptStringOnce . "themeName" "Omarchy theme to apply on setup" "matte-black" -}}
+
+[data]
+    hostname = {{ $hostname | quote }}
+    themeName = {{ $themeName | quote }}

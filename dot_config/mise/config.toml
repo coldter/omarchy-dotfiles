@@ -1,0 +1,10 @@
+[tools]
+antigravity-cli = "latest"
+bun = "1.4.0"
+chezmoi = "latest"
+codex = "latest"
+node = "latest"
+"npm:@opencode-ai/cli" = { version = "beta", allow_builds = ["@opencode-ai/cli"] }
+opencode = "1"
+pnpm = "latest"
+usage = "latest"

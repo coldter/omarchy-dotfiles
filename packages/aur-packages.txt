@@ -1,0 +1,9 @@
+# Manual packages — AUR packages installed on top of Omarchy's defaults.
+# Consumed by run_once_after_10-packages.sh via `omarchy pkg aur add`
+# (idempotent). One package per line, # = comment.
+
+brave-bin
+brave-origin-bin
+google-chrome
+openwhispr-bin
+visual-studio-code-insiders-bin
