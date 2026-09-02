@@ -36,8 +36,11 @@ you then *review and choose* (see §4). Nothing is ever auto-applied or auto-rev
 
 ```
 ~/.local/share/chezmoi/
-├── .chezmoi.toml.tmpl              # prompts hostname + theme on `chezmoi init` (new machines)
+├── .chezmoi.toml.tmpl              # prompts machine profile + theme on `chezmoi init` (new machines)
+├── .chezmoiignore                  # source-only files never applied into $HOME
 ├── README.md                       # this file
+├── .agents/skills/chezmoi-workflows/  # vendored agent skill (see §8) — never applied
+├── skills-lock.json                # lockfile for the vendored skill — never applied
 ├── packages/
 │   ├── manual-packages.txt         # YOUR repo packages (not Omarchy defaults)
 │   └── aur-packages.txt            # YOUR AUR packages
@@ -159,6 +162,13 @@ chezmoi is opt-in — only explicitly added files are tracked. Still:
 - Edit secrets-adjacent configs in place without `chezmoi add` — they simply stay unmanaged
 
 ## 8. For AI agents
+
+**Vendored skill (read first):** this repo ships `chezmoi-workflows` at
+`.agents/skills/chezmoi-workflows/SKILL.md` (installed via `npx skills add terrylica/cc-skills --skill chezmoi-workflows`, pinned by `skills-lock.json`).
+Agents working in this repo should read it and follow its workflows — in
+particular **Status Check (§1)**, **Safe Update / diff-before-apply (§13)** and
+**Validation (§10)**: `chezmoi status` → `chezmoi diff` → explicit
+`chezmoi re-add` / `chezmoi apply` → `chezmoi verify`. Never blind-`apply`.
 
 Operating rules when working on this machine's dotfiles:
 
