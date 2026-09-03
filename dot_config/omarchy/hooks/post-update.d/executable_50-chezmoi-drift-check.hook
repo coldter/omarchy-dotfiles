@@ -7,7 +7,7 @@
 #   * Only HIGHLIGHTS drift: desktop notification + a reviewable diff on disk
 #
 # Drift = a managed file on disk differs from the chezmoi source
-# (~/.local/share/chezmoi). Causes: omarchy update migrations, omarchy refresh,
+# ($(chezmoi source-path)). Causes: omarchy update migrations, omarchy refresh,
 # or your own edits that were never `chezmoi re-add`ed — chezmoi cannot tell
 # them apart, so treat the notification as "review me", not "Omarchy broke it".
 #
@@ -19,7 +19,8 @@ set +e  # nothing in this hook may fail the update
 
 # Bail out silently when chezmoi is not installed or source repo is missing.
 command -v chezmoi >/dev/null 2>&1 || exit 0
-[ -d "$HOME/.local/share/chezmoi/.git" ] || exit 0
+src="$(chezmoi source-path 2>/dev/null)" || exit 0
+[ -n "$src" ] && [ -d "$src/.git" ] || exit 0
 
 # Count changed targets (one line per changed file; also counts your own
 # unre-add'ed edits — see note above).

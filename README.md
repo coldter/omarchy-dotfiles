@@ -6,8 +6,8 @@ and nothing that runs on every apply: three tiny run-once setup scripts, one
 notify-only drift hook, and this documentation.
 
 - Omarchy v4 (quattro) · Hyprland · managed with [chezmoi](https://www.chezmoi.io/) (installed via mise)
-- chezmoi source: `~/.local/share/chezmoi` (this repo) → GitHub: `coldter/omarchy-dotfiles` (public)
-- Running today with profile `desktop` (theme `matte-black`). Adding machine #2 takes minutes (§5).
+- chezmoi source: `$(chezmoi source-path)` (this repo) → GitHub: `coldter/omarchy-dotfiles` (public)
+- Profiles: `desktop` + `laptop1` (see §5 registry). This machine runs `laptop1` (theme `ristretto`).
 
 **Contents:** §1 [Ownership model](#1-the-ownership-model-read-this-first) · §2 [Repo layout](#2-repo-layout) · §3 [New machine bootstrap](#3-new-machine-bootstrap-the-whole-point) · §4 [Daily workflows](#4-daily-workflows) · §5 [Machine profiles](#5-machine-profiles--per-machine-config) · §6 [Themes](#6-themes) · §7 [Safety](#7-safety-rules-this-is-a-public-repo) · §8 [For AI agents](#8-for-ai-agents) · §9 [Troubleshooting](#9-troubleshooting)
 
@@ -246,8 +246,8 @@ them here so a dead machine's identity is never lost:
 
 | Profile label | Machine | Displays (from `hyprctl monitors all`) | Notes |
 |---|---|---|---|
-| `desktop` | kuldeep (this machine) | HDMI-A-1 TV (1080p) above; DP-2 Samsung 144Hz below | workspace 1 pinned to HDMI-A-1 |
-| *(next machine)* | — | run `hyprctl monitors all` | |
+| `desktop` | primary desktop | HDMI-A-1 TV (1080p) above; DP-2 Samsung 144Hz below | workspace 1 pinned to HDMI-A-1 |
+| `laptop1` | arch / Lenovo IdeaPad 3 15IIL05 (this machine) | eDP-1 1920x1080@60 internal, scale 1.25 | single panel, no workspace rules |
 
 Other per-machine deltas (input.lua, autostart) can become templates keyed on
 `.machine` the same way — only do it when machines actually diverge.

@@ -56,6 +56,11 @@ hl.workspace_rule({ workspace = "1", monitor = "HDMI-A-1", persistent = true })
 for workspace = 2, 10 do
   hl.workspace_rule({ workspace = tostring(workspace), monitor = "DP-2" })
 end
+{{ else if eq (index . "machine" | default "") "laptop1" }}
+-- laptop1: Lenovo IdeaPad 3 15IIL05, single internal panel (eDP-1 1080p)
+-- Reproduces the live Omarchy auto-detect (scale 1.25 for this 15.6" panel).
+hl.env("GDK_SCALE", "1")
+hl.monitor({ output = "eDP-1", mode = "1920x1080@60", position = "0x0", scale = 1.25 })
 {{ else }}
 -- ▼▼ GENERIC FALLBACK — rendered when no block matches this machine's profile ▼▼
 -- Replace with this machine's real outputs (hyprctl monitors all), then set

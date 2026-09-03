@@ -42,5 +42,5 @@ hl.on("window.open", function(w)
     end, { timeout = 150, type = "oneshot" })
   end
 end)
-pcall(require, "/home/kuldeep/.config/hypr/openwhispr-binds.lua")
+pcall(require, "hypr.openwhispr-binds")
 

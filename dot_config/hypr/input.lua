@@ -59,5 +59,12 @@
 hl.config({
   input = {
     kb_options = "",
+    touchpad = {
+      natural_scroll = true,
+    },
   },
 })
+
+-- Touchpad gestures: three-finger horizontal swipe switches workspaces.
+-- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Gestures/
+hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
