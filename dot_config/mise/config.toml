@@ -8,3 +8,6 @@ node = "latest"
 opencode = "1"
 pnpm = "latest"
 usage = "latest"
+
+[settings.upgrade]
+auto_prune = false
