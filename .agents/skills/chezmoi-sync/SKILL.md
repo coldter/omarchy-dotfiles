@@ -100,14 +100,14 @@ Commit prefix convention: lowercase (`pkg:`, `mise:`, `monitors:`, `hypr:`, `oma
 ## 5. Apply
 
 ```bash
-chezmoi apply --dry-run --verbose 2>&1 | head -n 40   # must review first
+chezmoi apply --dry-run --force --verbose 2>&1 | head -n 40   # must review first
 chezmoi apply --force --verbose 2>&1 | head -n 60     # --force ONLY after diff review
 chezmoi apply --force --verbose ~/.config/path/file  # per-file retry if one entry sticks
 ```
 
 Notes:
 
-- Plain `apply` aborts with `could not open a new TTY` when a file `has changed since chezmoi last wrote it` — that is the guard working in a headless session. Re-run the same target with `--force` after reviewing its diff.
+- Plain `apply` — and even `--dry-run` — aborts with `could not open a new TTY` when a file `has changed since chezmoi last wrote it`: the guard fires before preview too. Add `--force` to the dry-run, review the diff, then `apply --force`.
 - `apply` may need two passes: re-run `status` after the first pass; a leftover `MM` (seen with `shell.json`) clears on per-file `--force` retry.
 - Templates: verify rendering with `chezmoi cat <target>`; new `monitors.lua.tmpl` blocks go ABOVE the `{{ else }}` fallback or the template fails to parse.
 - After Hyprland files: `hyprctl configerrors` must print nothing.
@@ -140,7 +140,7 @@ chezmoi git -- log --oneline -3
 
 | Symptom | Cause | Fix |
 | ------- | ----- | --- |
-| `could not open a new TTY` on apply | target changed since last write; headless guard | reviewed diff → `apply --force` (whole tree or per-file) |
+| `could not open a new TTY` on apply/dry-run | target changed since last write; headless guard | `--dry-run --force` to preview → `apply --force` (whole tree or per-file) |
 | `MM` survives a full `apply --force` | one entry needs per-file pass | `apply --force --verbose <target>` again, then `status` |
 | `re-add` ignores a template drift | chezmoi refuses to overwrite templates | `chezmoi edit <target>`, hand-merge, `apply` |
 | `openwhispr-binds.lua` re-drifts after every apply | Omarchy auto-manages that file | `apply` once for a clean state; do not loop or `re-add` the stale comment back |
