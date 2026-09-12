@@ -14,9 +14,9 @@ source "$OMARCHY_PATH/default/bash/rc"
 alias p='python'
 alias cat='bat'
 
-# opencode: stable (mise opencode = v1) vs v2 beta (mise npm:@opencode-ai/cli@beta -> opencode2)
-# opencode       -> stable v1 (1.18.23, `opencode --version`)
-# opencode-beta  -> v2 beta (0.0.0-beta-18414, `opencode2 --version` via npm)
+# opencode: stable (mise opencode = v1) vs v2 beta (mise npm:@opencode/cli@beta -> opencode2)
+# opencode       -> stable v1 (1.18.30, `opencode --version`)
+# opencode-beta  -> v2 beta (0.0.0-beta-19507, `opencode2 --version` via npm)
 # oc / ocb shorthands
 alias opencode-beta='opencode2'
 alias oc='opencode'
