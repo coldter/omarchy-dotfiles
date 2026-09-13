@@ -1,0 +1,537 @@
+{
+  // "typescript.tsserver.maxTsServerMemory": 8192,
+  "terminal.integrated.enablePersistentSessions": true,
+  "markdown.preview.doubleClickToSwitchToEditor": false,
+  "[dockercompose]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "TypeScriptTeam.native-preview"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.quickSuggestions": {
+      "strings": true
+    },
+    "editor.suggest.insertMode": "replace"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one",
+    "editor.fontSize": 18
+  },
+  "[nginx]": {
+    "editor.defaultFormatter": "ahmadalli.vscode-nginx-conf"
+  },
+  "[proto3]": {
+    "editor.defaultFormatter": "zxh404.vscode-proto3"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "breadcrumbs.enabled": true,
+  "clang-format.style": "google",
+  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.maxComputationTime": 0,
+  "editor.cursorBlinking": "smooth",
+  "editor.cursorStyle": "line",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.cursorSurroundingLines": 5,
+  "editor.fontFamily": "'JetBrainsMono Nerd Font Mono','JetBrainsMono NF','FiraCode Nerd Font Mono','Droid Sans Mono', 'monospace', monospace",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 18.5,
+  "editor.fontWeight": "300",
+  "editor.inlayHints.enabled": "on",
+  "editor.inlayHints.padding": true,
+  "editor.inlineSuggest.enabled": true,
+  "editor.lineNumbers": "relative",
+  "editor.linkedEditing": true,
+  "editor.minimap.enabled": false,
+  "editor.minimap.side": "left",
+  "editor.smoothScrolling": true,
+  "editor.stickyScroll.enabled": true,
+  "editor.suggest.insertMode": "replace",
+  "editor.suggestFontSize": 15,
+  "editor.tokenColorCustomizations": {
+    "[*Dark*]": {
+      "textMateRules": [
+        {
+          "scope": "ref.matchtext",
+          "settings": {
+            "foreground": "#fff"
+          }
+        }
+      ]
+    },
+    "[*Light*]": {
+      "textMateRules": [
+        {
+          "scope": "ref.matchtext",
+          "settings": {
+            "foreground": "#000"
+          }
+        }
+      ]
+    },
+    "textMateRules": [
+      {
+        "scope": "keyword.other.dotenv",
+        "settings": {
+          "foreground": "#FF000000"
+        }
+      }
+    ]
+  },
+  "editor.wordWrap": "on",
+  "errorLens.fontStyleItalic": true,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "extensions.autoUpdate": "on",
+  "extensions.ignoreRecommendations": false,
+  "files.associations": {
+    ".env*": "dotenv"
+  },
+  "find-it-faster.advanced.disableStartupChecks": true,
+  "todo-tree.ripgrep.ripgrep": "/usr/bin/rg",
+  "git.autofetch": true,
+  "git.openRepositoryInParentFolders": "never",
+  "github.copilot.editor.enableAutoCompletions": true,
+  "gitlens.mode.active": "zen",
+  "gitlens.telemetry.enabled": false,
+  "go.alternateTools": {
+    "go": "/home/kuldeep/.asdf/installs/golang/1.24.1/go/bin/go"
+  },
+  // "go.goroot": "/home/coldter/.asdf/installs/golang/1.21.4/go/",
+  "gopls": {
+    "ui.navigation.importShortcut": "Definition"
+  },
+  "go.goroot": "/home/cooldeep/.asdf/installs/golang/1.21.4/go/",
+  "go.toolsManagement.autoUpdate": true,
+  "js/ts.inlayHints.parameterNames.enabled": "all",
+  "markdown.preview.fontSize": 16,
+  "numberedBookmarks.navigateThroughAllFiles": "replace",
+  "prettify-ts.enableHover": false,
+  "projectManager.git.baseFolders": [
+    "$home/code"
+  ],
+  "projectManager.sortList": "Recent",
+  "redhat.telemetry.enabled": false,
+  "security.workspace.trust.enabled": false,
+  "security.workspace.trust.startupPrompt": "never",
+  // "terminal.external.linuxExec": "kitty",
+  // "terminal.explorerKind": "both",
+  // "terminal.sourceControlRepositoriesKind": "both",
+  "security.workspace.trust.untrustedFiles": "newWindow",
+  "sortJSON.orderOverride": [
+    "name",
+    "version",
+    "main",
+    "module",
+    "types",
+    "typings",
+    "files",
+    "publishConfig",
+    "repository",
+    "scripts",
+    "prefix",
+    "description",
+    "body"
+  ],
+  "sortJSON.orderUnderride": [
+    "resolutions",
+    "dependencies",
+    "devDependencies",
+    "peerDependencies",
+    "cSpell.userWords"
+  ],
+  "telemetry.telemetryLevel": "off",
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font Mono','FiraCode Nerd Font Mono','Droid Sans Mono', 'monospace', monospace",
+  "terminal.integrated.scrollback": 100000,
+  "terminal.integrated.smoothScrolling": true,
+  "tooltitude.env": {
+    "PATH": "/home/kuldeep/.asdf/installs/golang/1.22.4/go/bin:$PATH"
+  },
+  // "javascript.inlayHints.variableTypes.enabled": true,
+  // "typescript.inlayHints.variableTypes.enabled": true,
+  "js/ts.inlayHints.functionLikeReturnTypes.enabled": true,
+  "js/ts.inlayHints.variableTypes.enabled": true,
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
+  "vim.foldfix": true,
+  "vim.handleKeys": {
+    "<C-K>": true,
+    "<C-d>": true,
+    "<C-k>": true,
+    "<C-s>": false,
+    "<C-t>": true,
+    "<C-z>": false
+  },
+  "vim.highlightedyank.color": "rgba(230, 97, 89, 0.7)",
+  "vim.highlightedyank.enable": true,
+  "vim.highlightedyank.textColor": "white",
+  "vim.hlsearch": true,
+  "vim.insertModeKeyBindings": [
+    {
+      "after": [
+        "<Esc>"
+      ],
+      "before": [
+        "j",
+        "j"
+      ]
+    },
+    {
+      "before": [
+        "<c-t>"
+      ],
+      "commands": [
+        "editor.action.formatSelection"
+      ]
+    }
+  ],
+  "vim.leader": "<space>",
+  "vim.normalModeKeyBindingsNonRecursive": [
+    {
+      "before": [
+        "leader",
+        "r"
+      ],
+      "commands": [
+        "editor.action.rename"
+      ]
+    },
+    {
+      "before": [
+        "leader",
+        "w"
+      ],
+      "commands": [
+        ":w!"
+      ]
+    },
+    {
+      "before": [
+        "leader",
+        "q"
+      ],
+      "commands": [
+        ":q!"
+      ]
+    },
+    {
+      "before": [
+        "leader",
+        "x"
+      ],
+      "commands": [
+        ":x!"
+      ]
+    },
+    {
+      "after": [
+        "g",
+        "g",
+        "V",
+        "G"
+      ],
+      "before": [
+        "<c-a>"
+      ]
+    },
+    {
+      "after": [
+        "g",
+        "g",
+        "V",
+        "G"
+      ],
+      "before": [
+        "<c-a>"
+      ]
+    },
+    {
+      "after": [
+        "g",
+        "g",
+        "V",
+        "G"
+      ],
+      "before": [
+        "<c-a>"
+      ]
+    },
+    {
+      "before": [
+        "<leader>",
+        "k"
+      ],
+      "commands": [
+        "editor.action.showHover"
+      ]
+    },
+    {
+      "before": [
+        "]",
+        "d"
+      ],
+      "commands": [
+        "editor.action.marker.next"
+      ]
+    },
+    {
+      "before": [
+        "[",
+        "d"
+      ],
+      "commands": [
+        "editor.action.marker.prev"
+      ]
+    },
+    {
+      "before": [
+        "<leader>",
+        "c",
+        "a"
+      ],
+      "commands": [
+        "editor.action.quickFix"
+      ]
+    },
+    {
+      "after": [
+        "^"
+      ],
+      "before": [
+        "H"
+      ]
+    },
+    {
+      "after": [
+        "$"
+      ],
+      "before": [
+        "L"
+      ]
+    },
+    {
+      "before": [
+        "<c-p>"
+      ],
+      "commands": [
+        "workbench.action.quickOpen"
+      ]
+    },
+    {
+      "before": [
+        "<c-f>"
+      ],
+      "command": [
+        "editor.action.findReferences"
+      ]
+    },
+    {
+      "before": [
+        "leader",
+        "f"
+      ],
+      "command": [
+        "editor.action.findReferences"
+      ]
+    },
+    {
+      "after": [
+        "\"",
+        "_",
+        "d"
+      ],
+      "before": [
+        "d"
+      ]
+    },
+    {
+      "after": [
+        "\"",
+        "_",
+        "D"
+      ],
+      "before": [
+        "D"
+      ]
+    }
+  ],
+  "vim.useSystemClipboard": true,
+  "vim.visualModeKeyBindings": [
+    {
+      "before": [
+        "leader",
+        "f",
+        "v"
+      ],
+      "commands": [
+        "editor.action.formatSelection"
+      ]
+    },
+    {
+      "before": [
+        "leader",
+        "c",
+        "a"
+      ],
+      "commands": [
+        "editor.action.quickFix"
+      ]
+    },
+    {
+      "before": [
+        "leader",
+        "f",
+        "s"
+      ],
+      "commands": [
+        "editor.action.formatSelection"
+      ]
+    },
+    {
+      "before:": [
+        "<c-t>"
+      ],
+      "commands": [
+        "editor.action.formatSelection"
+      ]
+    }
+  ],
+  "vim.visualModeKeyBindingsNonRecursive": [
+    {
+      "after": [
+        "\"",
+        "_",
+        "d"
+      ],
+      "before": [
+        "d"
+      ]
+    }
+  ],
+  "vs-kubernetes": {
+    "vs-kubernetes.minikube-show-information-expiration": "2024-05-19T18:23:00.628Z"
+  },
+  "window.dialogStyle": "custom",
+  "window.titleBarStyle": "custom",
+  "workbench.editor.centeredLayoutAutoResize": true,
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.list.smoothScrolling": true,
+  "workbench.panel.defaultLocation": "right",
+  "workbench.settings.editor": "json",
+  "workbench.startupEditor": "readme",
+  "zenMode.centerLayout": true,
+  "zenMode.hideLineNumbers": false,
+  "zenMode.hideStatusBar": false,
+  "cSpell.userWords": [
+    "Avaialibiti",
+    "basicly",
+    "cardprofile",
+    "favourite",
+    "medotery",
+    "nessasary",
+    "tesseract"
+  ],
+  "continue.enableTabAutocomplete": false,
+  "explorer.confirmPasteNative": false,
+  "cline.vsCodeLmModelSelector": {},
+  "window.menuBarVisibility": "toggle",
+  "yaml.schemas": {
+    "/home/kuldeep/.vscode/extensions/continue.continue-1.0.13-linux-x64/config-yaml-schema.json": [
+      ".continue/**/*.yaml"
+    ],
+    "/home/kuldeep/.vscode/extensions/continue.continue-1.0.14-linux-x64/config-yaml-schema.json": [
+      ".continue/**/*.yaml"
+    ],
+    "/home/kuldeep/.vscode/extensions/continue.continue-1.0.15-linux-x64/config-yaml-schema.json": [
+      ".continue/**/*.yaml"
+    ],
+  },
+  "github.copilot.selectedCompletionModel": "",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": true,
+    "scminput": false,
+    "lua": true
+  },
+  "remote.defaultExtensionsIfInstalledLocally": [
+    "GitHub.copilot",
+    "GitHub.copilot-chat",
+    "GitHub.vscode-pull-request-github"
+  ],
+  "workbench.editor.editorActionsLocation": "titleBar",
+  "workbench.sideBar.location": "right",
+  "docker.extension.enableComposeLanguageServer": false,
+  "chat.mcp.autostart": "newAndOutdated",
+  "chat.mcp.gallery.enabled": true,
+  "gitlens.ai.model": "vscode",
+  "gitlens.ai.vscode.model": "copilot:gpt-4.1",
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "js/ts.updateImportsOnFileMove.enabled": "never",
+  "chat.tools.terminal.autoApprove": {
+    "git clean": true,
+    "git gc": true
+  },
+  "chat.viewSessions.enabled": false,
+  "claudeCode.preferredLocation": "panel",
+  "workbench.productIconTheme": "fluent-icons",
+  "workbench.colorTheme": "Pierre Dark",
+  "json.schemaDownload.trustedDomains": {
+    "https://biomejs.dev": true,
+    "https://developer.microsoft.com/json-schemas/": true,
+    "https://json-schema.org/": true,
+    "https://json.schemastore.org/": true,
+    "https://opencode.ai/config.json": true,
+    "https://raw.githubusercontent.com/": true,
+    "https://raw.githubusercontent.com/devcontainers/spec/": true,
+    "https://raw.githubusercontent.com/microsoft/vscode/": true,
+    "https://schemastore.azurewebsites.net/": true,
+    "https://www.schemastore.org/": true
+  },
+  "claudeCode.selectedModel": "default",
+  "workbench.activityBar.compact": true,
+  "workbench.secondarySideBar.showLabels": false,
+  "chat.agent.maxRequests": 500,
+  "chat.tools.urls.autoApprove": {
+    "https://code.visualstudio.com": true,
+    "https://github.com/microsoft/vscode/wiki/*": true,
+    "https://developers.cloudflare.com": {
+      "approveRequest": true,
+      "approveResponse": false
+    },
+    "https://raw.githubusercontent.com": {
+      "approveRequest": false,
+      "approveResponse": true
+    }
+  },
+  "chat.tips.enabled": false,
+  "js/ts.experimental.useTsgo": true,
+  "terminal.integrated.initialHint": false,
+  // Only register Biome (lint/format/LSP) when a biome.json exists in the workspace
+  // root folder. Stops the scanner from indexing config-less / multi-project umbrella
+  // folders, which was eating memory. (Key is requireConfiguration; requireConfigFile
+  // is the old, no-longer-supported name.)
+  "biome.requireConfiguration": true,
+  "better-todo-tree.ripgrep.ripgrep": "/usr/bin/rg"
+}

@@ -1,0 +1,177 @@
+[
+  {
+    "key": "ctrl+alt+`",
+    "command": "runCommands",
+    "args": {
+      "commands": [
+        "workbench.action.terminal.focus",
+        "workbench.action.toggleMaximizedPanel"
+      ]
+    },
+    "when": "terminalProcessSupported"
+  },
+  {
+    "command": "projectManager.listGitProjects#sideBarGit",
+    "key": "ctrl+shift+o"
+  },
+  {
+    "command": "workbench.action.toggleSidebarVisibility",
+    "key": "ctrl+e"
+  },
+  {
+    "command": "workbench.action.toggleSidebarVisibility",
+    "key": "ctrl+e"
+  },
+  {
+    "command": "workbench.action.toggleSidebarVisibility",
+    "key": "ctrl+e"
+  },
+  {
+    "command": "workbench.action.toggleSidebarVisibility",
+    "key": "ctrl+e"
+  },
+  {
+    "command": "renameFile",
+    "key": "r",
+    "when": "filesExplorerFocus && !inputFocus"
+  },
+  {
+    "command": "filesExplorer.copy",
+    "key": "c",
+    "when": "filesExplorerFocus && !inputFocus"
+  },
+  {
+    "command": "filesExplorer.paste",
+    "key": "p",
+    "when": "filesExplorerFocus && !inputFocus"
+  },
+  {
+    "command": "editor.action.addSelectionToNextFindMatch",
+    "key": "ctrl+n",
+    "when": "editorFocus"
+  },
+  {
+    "command": "-workbench.action.files.save",
+    "key": "ctrl+s"
+  },
+  {
+    "command": "saveAll",
+    "key": "ctrl+s"
+  },
+  {
+    "command": "workbench.action.toggleZenMode",
+    "key": "ctrl+shift+z"
+  },
+  // Place your key bindings in this file to override the defaults
+  {
+    "key": "ctrl+alt+]",
+    "command": "editor.action.outdentLines",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+[",
+    "command": "-editor.action.outdentLines",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+alt+]",
+    "command": "markdown.extension.onOutdentLines",
+    "when": "editorTextFocus && !suggestWidgetVisible && editorLangId =~ /^markdown$|^rmd$|^quarto$/"
+  },
+  {
+    "key": "ctrl+[",
+    "command": "-markdown.extension.onOutdentLines",
+    "when": "editorTextFocus && !suggestWidgetVisible && editorLangId =~ /^markdown$|^rmd$|^quarto$/"
+  },
+  {
+    "key": "ctrl+alt+[",
+    "command": "editor.action.indentLines",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+]",
+    "command": "-editor.action.indentLines",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+alt+[",
+    "command": "markdown.extension.onIndentLines",
+    "when": "editorTextFocus && !suggestWidgetVisible && editorLangId =~ /^markdown$|^rmd$|^quarto$/"
+  },
+  {
+    "key": "ctrl+]",
+    "command": "-markdown.extension.onIndentLines",
+    "when": "editorTextFocus && !suggestWidgetVisible && editorLangId =~ /^markdown$|^rmd$|^quarto$/"
+  },
+  {
+    "key": "ctrl+[",
+    "command": "workbench.action.navigateBack",
+    "when": "canNavigateBack"
+  },
+  {
+    "key": "ctrl+alt+-",
+    "command": "-workbench.action.navigateBack",
+    "when": "canNavigateBack"
+  },
+  {
+    "key": "ctrl+]",
+    "command": "workbench.action.navigateForward",
+    "when": "canNavigateForward"
+  },
+  {
+    "key": "ctrl+shift+-",
+    "command": "-workbench.action.navigateForward",
+    "when": "canNavigateForward"
+  },
+  {
+    "key": "ctrl+shift+alt+i",
+    "command": "-workbench.action.chat.openEditSession",
+    "when": "chatEditingParticipantRegistered && chatIsEnabled && view != 'workbench.panel.chat.view.edits'"
+  },
+  {
+    "key": "ctrl+shift+alt+i",
+    "command": "-workbench.panel.chatEditing",
+    "when": "workbench.panel.chat.view.edits.active"
+  },
+  {
+    "key": "ctrl+alt+i",
+    "command": "-workbench.action.chat.open",
+    "when": "chatPanelParticipantRegistered || chatSetupInstalled"
+  },
+  {
+    "key": "ctrl+alt+i",
+    "command": "-workbench.panel.chat",
+    "when": "workbench.panel.chat.view.copilot.active"
+  },
+  {
+    "key": "ctrl+alt+i",
+    "command": "continue.focusEditWithoutClear"
+  },
+  {
+    "key": "ctrl+shift+i",
+    "command": "-continue.focusEditWithoutClear"
+  },
+  {
+    "key": "shift+alt+a",
+    "command": "continue.applyCodeFromChat"
+  },
+  {
+    "key": "alt+a",
+    "command": "-continue.applyCodeFromChat"
+  },
+  {
+    "key": "ctrl+k `",
+    "command": "workbench.action.terminal.moveToEditor",
+    "when": "terminalHasBeenCreated && terminalIsOpen || terminalIsOpen && terminalProcessSupported"
+  },
+  {
+    "key": "ctrl+k `",
+    "command": "workbench.action.terminal.moveToTerminalPanel",
+    "when": "terminalEditorActive && terminalHasBeenCreated || terminalEditorActive && terminalProcessSupported"
+  },
+  {
+    "key": "ctrl+alt+d",
+    "command": "workbench.action.files.revert",
+    "when": "editorFocus"
+  }
+]
