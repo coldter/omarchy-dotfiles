@@ -12,7 +12,7 @@
           "formatAlt": "d MMMM 'W'ww yyyy",
           "verticalFormat": "HH\n—\nmm",
           "birthYear": 2000,
-          "lifeExpectancy": 59
+          "lifeExpectancy": 50
         },
         {
           "id": "omarchy.keyboard-layout"
@@ -57,7 +57,7 @@
       ]
     },
     "position": "top",
-    "transparent": true
+    "transparent": false
   },
   "idle": {
     "lock": 300,
