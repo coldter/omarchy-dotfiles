@@ -4,10 +4,24 @@ bun = "1.4.2"
 chezmoi = "latest"
 codex = "latest"
 node = "latest"
-"npm:@opencode/cli" = { version = "latest", allow_builds = ["@opencode/cli"], allow_low_downloads = true }
+# OpenCode: stable (`opencode`) + beta (`opencode2`) side by side.
+# Stable is listed first so it wins `opencode` on PATH; beta is invoked
+# explicitly via the opencode-beta/ocb shell aliases in [shell_alias] below.
+"npm:@opencode/cli" = [
+  { version = "latest", allow_builds = ["@opencode/cli"], allow_low_downloads = true },
+  { version = "beta", allow_builds = ["@opencode/cli"], allow_low_downloads = true },
+]
 "npm:@earendil-works/pi-coding-agent" = "latest"
 pnpm = "latest"
 usage = "latest"
 
 [settings.upgrade]
 auto_prune = false
+
+[shell_alias]
+# `oc` = stable channel; `ocb`/`opencode-beta`/`opencode2` = beta channel.
+# Beta is pinned explicitly because stable's bin dir comes first on PATH.
+oc = 'opencode'
+ocb = 'mise x "npm:@opencode/cli@beta" -- opencode'
+opencode-beta = 'mise x "npm:@opencode/cli@beta" -- opencode'
+opencode2 = 'mise x "npm:@opencode/cli@beta" -- opencode'
