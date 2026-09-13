@@ -1,0 +1,80 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "vim_mode": false,
+  "vim": {
+    "use_system_clipboard": "on_yank",
+  },
+  "icon_theme": "Material Icon Theme",
+  "cli_default_open_behavior": "new_window",
+  "git_panel": {
+    "tree_view": true,
+  },
+  "agent": {
+    "default_model": {
+      "provider": "zed.dev",
+      "model": "gpt-5.6-sol",
+      "enable_thinking": true,
+      "effort": "high",
+    },
+    "favorite_models": [],
+    "model_parameters": [],
+  },
+  "terminal": {
+    "font_size": 14.5,
+    "font_family": "JetBrainsMono Nerd Font Mono",
+    "font_fallbacks": [
+      "FiraCode Nerd Font Mono",
+      "Droid Sans Mono",
+      "monospace",
+      "monospace",
+    ],
+    "blinking": "on",
+    "max_scroll_history_lines": 100000,
+  },
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false,
+  },
+  "base_keymap": "VSCode",
+  "relative_line_numbers": "enabled",
+  "sticky_scroll": {
+    "enabled": true,
+  },
+  "vertical_scroll_margin": 5.0,
+  "gutter": {
+    "line_numbers": true,
+  },
+  "minimap": {
+    "show": "never",
+  },
+  "cursor_shape": "bar",
+  "cursor_blink": true,
+  "buffer_font_fallbacks": [
+    "JetBrainsMono NF",
+    "FiraCode Nerd Font Mono",
+    "Droid Sans Mono",
+    "monospace",
+    "monospace",
+  ],
+  "buffer_font_family": "JetBrainsMono Nerd Font Mono",
+  "file_types": {
+    "dotenv": [".env*"],
+  },
+  "linked_edits": true,
+  "show_edit_predictions": true,
+  "soft_wrap": "editor_width",
+  "ui_font_size": 16.0,
+  "buffer_font_size": 14.5,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "Pierre Dark",
+  },
+}
