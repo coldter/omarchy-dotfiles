@@ -100,14 +100,18 @@ Commit prefix convention: lowercase (`pkg:`, `mise:`, `monitors:`, `hypr:`, `oma
 ## 5. Apply
 
 ```bash
-chezmoi apply --dry-run --force --verbose 2>&1 | head -n 40   # must review first
-chezmoi apply --force --verbose 2>&1 | head -n 60     # --force ONLY after diff review
-chezmoi apply --force --verbose ~/.config/path/file  # per-file retry if one entry sticks
+# NEVER pipe apply --verbose through head — SIGPIPE kills chezmoi mid-run (see Notes).
+chezmoi apply --dry-run --force --verbose > /tmp/opencode/apply-dry.log 2>&1; echo "exit:$?"
+head -n 40 /tmp/opencode/apply-dry.log                 # must review first
+chezmoi apply --force --verbose > /tmp/opencode/apply.log 2>&1; echo "exit:$?"  # --force ONLY after diff review
+tail -n 60 /tmp/opencode/apply.log
+chezmoi apply --force --verbose ~/.config/path/file    # per-file retry if one entry sticks
 ```
 
 Notes:
 
 - Plain `apply` — and even `--dry-run` — aborts with `could not open a new TTY` when a file `has changed since chezmoi last wrote it`: the guard fires before preview too. Add `--force` to the dry-run, review the diff, then `apply --force`.
+- Never run `chezmoi apply --verbose | head -n N`: when `head` exits, chezmoi dies from SIGPIPE partway through and later entries are silently skipped (they linger as ` M`/`MM`/` A` in `status`). Redirect to a log file, check the real `exit:$?`, and read the log with `head`/`tail`. Same applies to the `--dry-run` (truncated review).
 - `apply` may need two passes: re-run `status` after the first pass; a leftover `MM` (seen with `shell.json`) clears on per-file `--force` retry.
 - Templates: verify rendering with `chezmoi cat <target>`; new `monitors.lua.tmpl` blocks go ABOVE the `{{ else }}` fallback or the template fails to parse.
 - After Hyprland files: `hyprctl configerrors` must print nothing.
@@ -141,6 +145,7 @@ chezmoi git -- log --oneline -3
 | Symptom | Cause | Fix |
 | ------- | ----- | --- |
 | `could not open a new TTY` on apply/dry-run | target changed since last write; headless guard | `--dry-run --force` to preview → `apply --force` (whole tree or per-file) |
+| `status` still lists entries right after piping `apply --verbose` into `head` | SIGPIPE killed chezmoi mid-apply; later entries never written | redirect apply to a log file (`> /tmp/opencode/apply.log 2>&1; echo exit:$?`), re-run, confirm exit 0 |
 | `MM` survives a full `apply --force` | one entry needs per-file pass | `apply --force --verbose <target>` again, then `status` |
 | `re-add` ignores a template drift | chezmoi refuses to overwrite templates | `chezmoi edit <target>`, hand-merge, `apply` |
 | `openwhispr-binds.lua` re-drifts after every apply | Omarchy auto-manages that file | `apply` once for a clean state; do not loop or `re-add` the stale comment back |
