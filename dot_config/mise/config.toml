@@ -11,10 +11,10 @@ node = "latest"
   { version = "latest", allow_builds = ["@opencode/cli"], allow_low_downloads = true },
   { version = "beta", allow_builds = ["@opencode/cli"], allow_low_downloads = true },
 ]
-"npm:@earendil-works/pi-coding-agent" = "latest"
 pnpm = "latest"
 usage = "latest"
 "npm:command-code" = "latest"
+pi = "latest"
 
 [settings.upgrade]
 auto_prune = false
