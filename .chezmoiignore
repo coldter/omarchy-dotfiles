@@ -1,7 +1,12 @@
 # Source-only files: kept in the repo, never applied into $HOME.
 README.md
 packages
-
-# Vendored agent skills (installed via skills.sh / npx skills add)
-.agents
 skills-lock.json
+
+# Vendored project skills for this repo (installed via skills.sh / npx skills add).
+# Source-only: agents load them as *project* skills while this repo is the cwd —
+# they must never be applied into ~/.agents. List every vendored skill here.
+# (`.agents` itself is NOT ignored: dot_agents/skills/i-have-adhd is tracked,
+#  because ~/.pi/agent/skills/i-have-adhd symlinks to it.)
+.agents/skills/chezmoi-workflows
+.agents/skills/chezmoi-sync
