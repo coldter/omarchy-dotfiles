@@ -331,6 +331,11 @@ hash pinned by `skills-lock.json`). Follow its workflows — in particular
 **Validation (§10)**: `chezmoi status` → `chezmoi diff` → explicit
 `chezmoi re-add` / `chezmoi apply` → `chezmoi verify`. Never blind-apply.
 
+⚠ Every vendored project skill (and any new one you add to `.agents/skills/`)
+must be listed in `.chezmoiignore`, or `chezmoi` would treat it as a target and
+apply it into `~/.agents/skills/`. The one exception is the user-level
+`i-have-adhd` skill, which IS tracked (`dot_agents/`).
+
 Operating rules:
 
 1. **Read and follow the vendored skill** (above) before touching anything.
