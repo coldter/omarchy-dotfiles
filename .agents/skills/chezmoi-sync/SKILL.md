@@ -71,7 +71,21 @@ Name decoding: source `private_shell.json` → target `shell.json` (`private_` =
 | Omarchy rewrote a managed file, source version is intentional (e.g. deduped comments) | `apply --force` (source wins; drift will likely return — do NOT loop) |
 | Drift is in a `*.tmpl` rendered file (e.g. `monitors.lua`) | NEVER `re-add` (chezmoi refuses templates). `chezmoi edit <target>` the template, then `apply` |
 | `lifeExpectancy`-style value drift where source is already committed | `apply` (target stale) |
+| `MM` on `.config/mise/config.toml` (source `npm:<pkg>` vs live shortname) | mise rewrote it: adopt per README §4.5 — `chezmoi re-add <target>`, commit `mise: …`, push |
 | Unsure | show the per-file `chezmoi diff`, ask user: adopt (`re-add`) or reject (`apply`) |
+
+Before treating a mise `npm:<pkg>` ↔ shortname pair as cosmetic, resolve the backend — a
+shortname may pick a *different* backend than the explicit spec:
+
+```bash
+mise registry <name>   # shortname → backend priority list (first match wins)
+cat ~/.local/share/mise/installs/<name>/.mise.backend.toml  # e.g. full = "aqua:earendil-works/pi", explicit_backend = false
+ls ~/.local/share/mise/installs/   # npm-<pkg> dirs exist only for npm-backend tools
+```
+
+Adopting the shortname matches what `mise use`/`mise install` write and what is physically
+installed; `apply`-ing the explicit form back can install a second copy under a different
+`installs/` dir. Repo policy (README §4.5) is to adopt mise's write, so no need to ask.
 
 ## 4. Pull
 
@@ -151,6 +165,7 @@ chezmoi git -- log --oneline -3
 | `openwhispr-binds.lua` re-drifts after every apply | Omarchy auto-manages that file | `apply` once for a clean state; do not loop or `re-add` the stale comment back |
 | `shell.json` vs `private_shell.json` confusion | `private_` prefix = 0600 target `shell.json` | edit source `private_shell.json`, never assume a missing `shell.json` in source |
 | `verify` exit 1 | drift remains | `status` + per-file `diff`, return to §3 |
+| mise config re-drifts (`  M`/`MM` on `config.toml`) | `mise use`/`mise upgrade`/`mise prune` rewrites the whole tools table, normalizing `npm:<pkg>` specs to registry shortnames | adopt with `re-add` (README §4.5) instead of re-`apply`-ing the long form — see §3 backend note |
 | `pull --ff-only` refuses | diverged (local commits + upstream) | resolve per §4 conflict flow, or push first if ahead-only |
 | Template parse error on apply | `else if` placed after `else` | move new machine block above `{{ else }}` fallback |
 
@@ -159,3 +174,4 @@ chezmoi git -- log --oneline -3
 1. Did every phase succeed to §7 SLO? If not, fix the section above.
 2. Did a flag or output change? Update the command block.
 3. Was a workaround needed? Fold it into the skill so the next run doesn't improvise.
+4. Did you edit this skill (it is tracked and chezmoi-ignored)? Commit it too (`agents:` prefix) — an uncommitted skill edit breaks the §7 clean-tree SLO.
