@@ -17,7 +17,7 @@ usage = "latest"
 pi = "latest"
 
 [settings.upgrade]
-auto_prune = false
+auto_prune = true
 
 [shell_alias]
 # `oc` = stable channel; `ocb`/`opencode-beta`/`opencode2` = beta channel.
