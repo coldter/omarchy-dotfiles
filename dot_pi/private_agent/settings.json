@@ -8,6 +8,10 @@
     "npm:pi-subagents",
     "npm:pi-web-access",
     "npm:pi-commandcode-provider",
-    "npm:pi-token-speed"
-  ]
+    "npm:pi-token-speed",
+    "npm:pi-mcp-adapter",
+    "npm:@juicesharp/rpiv-ask-user-question"
+  ],
+  "tuiMode": "fullscreen",
+  "fullscreenExitOutput": "transcript"
 }

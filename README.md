@@ -58,7 +58,7 @@ note it does **not** fire after `omarchy refresh` — check `chezmoi diff` manua
 ├── run_once_after_20-theme.sh.tmpl   # omarchy theme set <themeName> (regenerates zone 2)
 ├── run_once_after_30-mise.sh         # mise install from the tracked config
 ├── dot_bashrc                        # → ~/.bashrc
-├── dot_pi/agent/                     # → ~/.pi/agent/ — pi coding agent (§2, §4.6)
+├── dot_pi/private_agent/             # → ~/.pi/agent/ — pi coding agent, dir 0700 (§2, §4.6)
 │   ├── settings.json                 # provider/model/thinking defaults + npm package list
 │   ├── extensions/omarchy-system-theme.ts  # pi theme follows Omarchy light/dark mode
 │   ├── themes/private_omarchy-system.json  # → themes/omarchy-system.json (0600)
@@ -87,6 +87,7 @@ note it does **not** fire after `omarchy refresh` — check `chezmoi diff` manua
 |---|---|
 | `dot_bashrc` | `~/.bashrc` |
 | `private_shell.json` | `~/.config/omarchy/shell.json` with mode 0600 |
+| `private_agent` (a directory) | `~/.pi/agent/` with mode 0700 — `private_` strips group/world bits from directories too |
 | `executable_50-chezmoi-drift-check.hook` | target file with the executable bit set |
 | `*.tmpl` suffix | a Go template — rendered on apply, never copied verbatim |
 | `run_once_after_*` | a script that runs once per content-hash during `chezmoi apply` |
@@ -372,5 +373,6 @@ Operating rules:
 | `chezmoi git -- push` fails | No remote on this machine — do §3.1 (machine #1 first push) |
 | A tracked file you no longer want (`chezmoi managed` lists the tracked set) | `chezmoi forget <path>` — removes from source, keeps the live file |
 | `chezmoi diff` shows only `lastChangelogVersion` in `~/.pi/agent/settings.json` | Expected after a pi upgrade — adopt it: `chezmoi re-add ~/.pi/agent/settings.json` (§4.6) |
+| `MM` on a directory (`.pi/agent`) showing only a mode diff | Directory modes are **not** read from the source dir's mode — `chmod` there is ignored by `apply`, and `re-add` skips directories | Carry it in the name: `dot_pi/private_agent` → `~/.pi/agent` at 0700 (`private_` = source mode & ^077). Rename + `chezmoi apply` |
 | pi skill missing after restore (`~/.pi/agent/skills/i-have-adhd` dangles) | Its target is tracked too: `~/.agents/skills/i-have-adhd` — check `chezmoi status`/`apply` |
 | Machine boots with fallback monitor config | Its profile has no block in `monitors.lua.tmpl` — add one (§5) |
