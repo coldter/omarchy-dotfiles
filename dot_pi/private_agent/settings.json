@@ -13,5 +13,6 @@
     "npm:@juicesharp/rpiv-ask-user-question"
   ],
   "tuiMode": "fullscreen",
-  "fullscreenExitOutput": "transcript"
+  "fullscreenExitOutput": "transcript",
+  "hideThinkingBlock": true
 }
