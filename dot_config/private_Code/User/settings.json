@@ -493,7 +493,6 @@
     "git clean": true,
     "git gc": true
   },
-  "chat.viewSessions.enabled": false,
   "claudeCode.preferredLocation": "panel",
   "workbench.productIconTheme": "fluent-icons",
   "workbench.colorTheme": "Pierre Dark",
@@ -533,5 +532,6 @@
   // folders, which was eating memory. (Key is requireConfiguration; requireConfigFile
   // is the old, no-longer-supported name.)
   "biome.requireConfiguration": true,
-  "better-todo-tree.ripgrep.ripgrep": "/usr/bin/rg"
+  "better-todo-tree.ripgrep.ripgrep": "/usr/bin/rg",
+  "chat.viewSessions.orientation": "stacked"
 }
