@@ -59,6 +59,7 @@ Status columns (`chezmoi status --help`): col-1 = last-written vs actual (your e
 | ` M` | source changed (e.g. just pulled) — `apply` will update target |
 | `MM` | both sides changed — `apply` needs review, may need `--force` |
 | `MM` on `openwhispr-binds.lua` | known Omarchy rewriter — source still wins, but expect re-drift |
+| `MM` on `hyprland.lua` (duplicate abs-path `pcall(require, "/home/…/openwhispr-binds.lua")` + tab-indented `window.open` block) | OpenWhispr installer rewrites `hyprland.lua` **and** `openwhispr-binds.lua` in one pass (identical mtimes); repo wants the portable `pcall(require, "hypr.openwhispr-binds")` (commit `4aa5015`) — `apply` once, do not `re-add` the abs path |
 
 Name decoding: source `private_shell.json` → target `shell.json` (`private_` = 0600, not a name change). `*.tmpl` files never render 1:1 — check with `chezmoi cat <target>`.
 
@@ -164,6 +165,7 @@ chezmoi git -- log --oneline -3
 | `MM` survives a full `apply --force` | one entry needs per-file pass | `apply --force --verbose <target>` again, then `status` |
 | `re-add` ignores a template drift | chezmoi refuses to overwrite templates | `chezmoi edit <target>`, hand-merge, `apply` |
 | `openwhispr-binds.lua` re-drifts after every apply | Omarchy auto-manages that file | `apply` once for a clean state; do not loop or `re-add` the stale comment back |
+| `hyprland.lua` + `openwhispr-binds.lua` both drift with the same mtime | OpenWhispr installer rewrites both: stale comment back, tabs in `window.open`, extra absolute-path `pcall(require, …)` appended | `apply --force` both files (portable module require wins), then `hyprctl configerrors`; never `re-add` the abs path |
 | `shell.json` vs `private_shell.json` confusion | `private_` prefix = 0600 target `shell.json` | edit source `private_shell.json`, never assume a missing `shell.json` in source |
 | `MM` on a directory (e.g. `.pi/agent`), diff shows only `old mode 40700 / new mode 40755` | directory mode drift. `apply` reports the *state-recorded* mode; `chmod` on the source dir is ignored (probe: source `711` still wanted `755`), and `re-add` ignores all non-file entries | git-tracked fix: `git mv dot_pi/agent dot_pi/private_agent` (target = source mode & ^077 = 0700), `chezmoi apply`, then `status` clears. Portable to fresh clones — plain `chmod` is not |
 | `verify` exit 1 | drift remains | `status` + per-file `diff`, return to §3 |
