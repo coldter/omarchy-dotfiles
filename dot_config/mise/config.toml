@@ -13,7 +13,6 @@ node = "latest"
 ]
 pnpm = "latest"
 usage = "latest"
-"npm:command-code" = "latest"
 pi = "latest"
 
 [settings.upgrade]
