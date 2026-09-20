@@ -35,7 +35,7 @@
     "editor.defaultFormatter": "zxh404.vscode-proto3"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
+    "editor.defaultFormatter": "TypeScriptTeam.native-preview"
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
@@ -469,11 +469,12 @@
   },
   "github.copilot.selectedCompletionModel": "",
   "github.copilot.enable": {
-    "*": true,
+    "*": false,
     "plaintext": true,
     "markdown": true,
     "scminput": false,
-    "lua": true
+    "lua": true,
+    "typescript": false
   },
   "remote.defaultExtensionsIfInstalledLocally": [
     "GitHub.copilot",
