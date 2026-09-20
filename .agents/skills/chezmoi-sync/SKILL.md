@@ -54,6 +54,8 @@ chezmoi verify; echo "verify:$?"       # 0 = clean, 1 = drift remains
 
 Status columns (`chezmoi status --help`): col-1 = last-written vs actual (your edits/Omarchy rewrites), col-2 = actual vs target (`apply` effect).
 
+**`chezmoi diff` direction**: `a/` = **live target** (`$HOME`), `b/` = **source** (desired) — `-` lines are what is on disk now, `+` lines are what source/`apply` would write. Confirm on one known file (`chezmoi cat <target>`) before reading a diff backwards.
+
 | Code | Meaning |
 | ---- | ------- |
 | ` M` | source changed (e.g. just pulled) — `apply` will update target |
@@ -73,6 +75,9 @@ Name decoding: source `private_shell.json` → target `shell.json` (`private_` =
 | Drift is in a `*.tmpl` rendered file (e.g. `monitors.lua`) | NEVER `re-add` (chezmoi refuses templates). `chezmoi edit <target>` the template, then `apply` |
 | `lifeExpectancy`-style value drift where source is already committed | `apply` (target stale) |
 | `MM` on `.config/mise/config.toml` (source `npm:<pkg>` vs live shortname) | mise rewrote it: adopt per README §4.5 — `chezmoi re-add <target>`, commit `mise: …`, push |
+| `MM` on `.pi/agent/settings.json`, only `lastChangelogVersion` older in source | pi's own write on every upgrade; README §4.6 calls it expected drift — `re-add` (never `apply` the stale value back) |
+| `MM` on `.config/Code/User/settings.json` (live newer than last commit; formatter / `github.copilot.enable` keys differ) | VS Code UI writes this file — adopt live (`re-add`), per repo precedent `vscode: adopt live …` |
+| `MM` on `.config/mise/config.toml` where live **dropped** a declared `"npm:<pkg>"` line | not a normalizing rewrite — `mise registry <t>` errors, so `npm:` is the only valid form. Probe `mise ls <t>` / `mise which <t>`; installed-but-*inactive* means the declaration is gone: ask whether to adopt the removal (`re-add`, tool becomes orphan/prunable) or restore (`apply`) |
 | `MM` on a **directory** (e.g. `.pi/agent`) | dir mode drift only — target dir mode is NOT taken from the source dir's mode (`chmod` the source dir is ignored), and `re-add` skips non-files. Rename the source dir with the `private_` attribute (e.g. `dot_pi/private_agent` → 0700); never plain-`chmod` it |
 | Unsure | show the per-file `chezmoi diff`, ask user: adopt (`re-add`) or reject (`apply`) |
 
@@ -87,7 +92,7 @@ ls ~/.local/share/mise/installs/   # npm-<pkg> dirs exist only for npm-backend t
 
 Adopting the shortname matches what `mise use`/`mise install` write and what is physically
 installed; `apply`-ing the explicit form back can install a second copy under a different
-`installs/` dir. Repo policy (README §4.5) is to adopt mise's write, so no need to ask.
+`installs/` dir. Repo policy (README §4.5) is to adopt mise's write, so no need to ask — but only for a mere `npm:<pkg>` ↔ shortname rename. A declaration *disappearing* leaves the CLI inactive (`mise which` fails), so ask per §3.
 
 ## 4. Pull
 
@@ -170,6 +175,7 @@ chezmoi git -- log --oneline -3
 | `MM` on a directory (e.g. `.pi/agent`), diff shows only `old mode 40700 / new mode 40755` | directory mode drift. `apply` reports the *state-recorded* mode; `chmod` on the source dir is ignored (probe: source `711` still wanted `755`), and `re-add` ignores all non-file entries | git-tracked fix: `git mv dot_pi/agent dot_pi/private_agent` (target = source mode & ^077 = 0700), `chezmoi apply`, then `status` clears. Portable to fresh clones — plain `chmod` is not |
 | `verify` exit 1 | drift remains | `status` + per-file `diff`, return to §3 |
 | mise config re-drifts (`  M`/`MM` on `config.toml`) | `mise use`/`mise upgrade`/`mise prune` rewrites the whole tools table, normalizing `npm:<pkg>` specs to registry shortnames | adopt with `re-add` (README §4.5) instead of re-`apply`-ing the long form — see §3 backend note |
+| `mise which <tool>` → "is a mise bin however it is not currently active" | tool still installed under `installs/`, but live `config.toml` no longer declares it (mise never drops a resolvable `npm:` key on its own — `mise registry <tool>` errors, so no shortname exists) | `chezmoi diff ~/.config/mise/config.toml`; decide per §3 (adopt removal vs restore declaration) — with `auto_prune = true` an undeclared install is eventually deleted |
 | `pull --ff-only` refuses | diverged (local commits + upstream) | resolve per §4 conflict flow, or push first if ahead-only |
 | Template parse error on apply | `else if` placed after `else` | move new machine block above `{{ else }}` fallback |
 
