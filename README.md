@@ -65,8 +65,9 @@ note it does **not** fire after `omarchy refresh` — check `chezmoi diff` manua
 │   └── skills/                       # symlink_ entries: omarchy, diagnose-crash, i-have-adhd
 ├── dot_agents/skills/i-have-adhd/    # → ~/.agents/skills/i-have-adhd — target of that symlink
 ├── dot_config/
-│   ├── hypr/                         # hyprland.lua, bindings/input/looknfeel/autostart,
-│   │                                 # openwhispr-binds.lua + monitors.lua.tmpl (per-machine!)
+│   ├── hypr/                         # hyprland.lua.tmpl + monitors.lua.tmpl (per-machine),
+│   │                                 # bindings/input/looknfeel/autostart,
+│   │                                 # openwhispr-binds.lua (mirrors OpenWhispr's writer — §4.7)
 │   ├── omarchy/
 │   │   ├── private_shell.json        # → shell.json (private_ = 0600 perms, Omarchy's choice)
 │   │   ├── themes/                   # your custom theme: a-crane-with-a-light-on-top
@@ -235,12 +236,43 @@ chezmoi git -- add -A && chezmoi git -- commit -m "pi: …" && chezmoi git -- pu
 that drift is expected; adopt it with the commands above (or leave it until the
 next real change). `/login` only touches the untracked `auth.json`.
 
+### 4.7 OpenWhispr-owned Hyprland files (mirror, never patch)
+
+OpenWhispr rewrites two tracked files whenever it (re)registers its hotkey:
+
+- `~/.config/hypr/openwhispr-binds.lua` — rebuilt with its 2-line canonical
+  header (`OpenWhispr keybinds (managed automatically)` + the matching "load
+  line" note). Comment lines are preserved as-is.
+- `~/.config/hypr/hyprland.lua` — it appends
+  `pcall(require, "<absolute path>/openwhispr-binds.lua")`. Its filter only
+  recognizes existing lines that contain the filename *and* start with
+  `pcall(require,`.
+
+Our source mirrors that output **byte-for-byte**, so the app's write is a no-op:
+`hyprland.lua.tmpl` renders the absolute path with `{{ .chezmoi.homeDir }}`, and
+`openwhispr-binds.lua` carries the app's exact header. Do **not** "fix" the path
+back to the portable module name `hypr.openwhispr-binds` (commit `4aa5015`) or
+trim the header — the app recognizes neither, so it appends a second,
+absolute-path require (double load) and restores its header on the next run.
+
+If drift reappears after an OpenWhispr upgrade, its writer changed. Re-derive the
+canonical output from the installed app and re-adopt:
+
+```bash
+grep -a -o -b 'openwhispr-binds' /opt/openwhispr/resources/app.asar   # find offsets
+dd if=/opt/openwhispr/resources/app.asar bs=1 skip=<offset> count=30000   # MANAGED_HEADER_TEXT / sourceLine
+```
+
+then update the template/header, `chezmoi apply` and verify (§9).
+
 ## 5. Machine profiles & per-machine config
 
-`dot_config/hypr/monitors.lua.tmpl` is the only templated config. It contains one
-Lua block per **machine profile**; chezmoi renders only the matching block into
+Two configs are templated. `dot_config/hypr/monitors.lua.tmpl` contains one Lua
+block per **machine profile**; chezmoi renders only the matching block into
 `~/.config/hypr/monitors.lua`. Unknown profiles (and unset keys) render a generic
 fallback block, so a fresh machine always boots with a working display config.
+`dot_config/hypr/hyprland.lua.tmpl` renders the same file with `{{ .chezmoi.homeDir }}`
+supplying the absolute path of OpenWhispr's generated require line (§4.7).
 
 **Conditionals key on the `machine` profile variable — never the hostname.**
 Hostnames change (reinstalls, DHCP, cloned VMs); the profile label is a stable,
@@ -343,7 +375,8 @@ Operating rules:
 2. Source-of-truth edits happen via the live files + `chezmoi re-add`
    (or `chezmoi edit <target>`, which edits source and applies on save).
 3. **Never** edit rendered output of `*.tmpl` files directly
-   (`~/.config/hypr/monitors.lua`) — edit the template in source.
+   (`~/.config/hypr/monitors.lua`, `~/.config/hypr/hyprland.lua`) — edit the
+template in source.
 4. Per-machine conditionals key on the `[data] machine` profile variable —
    **never on hostname**. Set it in `~/.config/chezmoi/chezmoi.toml` (untracked).
 5. `chezmoi re-add` skips templated files. To adopt upstream changes into a
@@ -373,6 +406,7 @@ Operating rules:
 | `chezmoi git -- push` fails | No remote on this machine — do §3.1 (machine #1 first push) |
 | A tracked file you no longer want (`chezmoi managed` lists the tracked set) | `chezmoi forget <path>` — removes from source, keeps the live file |
 | `chezmoi diff` shows only `lastChangelogVersion` in `~/.pi/agent/settings.json` | Expected after a pi upgrade — adopt it: `chezmoi re-add ~/.pi/agent/settings.json` (§4.6) |
+| `hyprland.lua` / `openwhispr-binds.lua` drift after OpenWhispr starts | OpenWhispr's writer changed (upgrade) — output no longer matches our mirrored source (§4.7) | Re-derive the app's canonical output and re-adopt (§4.7); never restore the portable module require or a trimmed header |
 | `MM` on a directory (`.pi/agent`) showing only a mode diff | Directory modes are **not** read from the source dir's mode — `chmod` there is ignored by `apply`, and `re-add` skips directories | Carry it in the name: `dot_pi/private_agent` → `~/.pi/agent` at 0700 (`private_` = source mode & ^077). Rename + `chezmoi apply` |
 | pi skill missing after restore (`~/.pi/agent/skills/i-have-adhd` dangles) | Its target is tracked too: `~/.agents/skills/i-have-adhd` — check `chezmoi status`/`apply` |
 | Machine boots with fallback monitor config | Its profile has no block in `monitors.lua.tmpl` — add one (§5) |
