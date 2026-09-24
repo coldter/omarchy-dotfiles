@@ -60,8 +60,7 @@ Status columns (`chezmoi status --help`): col-1 = last-written vs actual (your e
 | ---- | ------- |
 | ` M` | source changed (e.g. just pulled) — `apply` will update target |
 | `MM` | both sides changed — `apply` needs review, may need `--force` |
-| `MM` on `openwhispr-binds.lua` | known Omarchy rewriter — source still wins, but expect re-drift |
-| `MM` on `hyprland.lua` (duplicate abs-path `pcall(require, "/home/…/openwhispr-binds.lua")` + tab-indented `window.open` block) | OpenWhispr installer rewrites `hyprland.lua` **and** `openwhispr-binds.lua` in one pass (identical mtimes); repo wants the portable `pcall(require, "hypr.openwhispr-binds")` (commit `4aa5015`) — `apply` once, do not `re-add` the abs path |
+| `MM` on `hyprland.lua` + `openwhispr-binds.lua` | OpenWhispr rewrote its **app-owned** files. Source mirrors the app's canonical output byte-for-byte, so a rewrite is a no-op (§3.1). Drift that recurs after an app upgrade = the app changed its writer → re-derive and re-adopt (§3.1) |
 
 Name decoding: source `private_shell.json` → target `shell.json` (`private_` = 0600, not a name change). `*.tmpl` files never render 1:1 — check with `chezmoi cat <target>`.
 
@@ -93,6 +92,36 @@ ls ~/.local/share/mise/installs/   # npm-<pkg> dirs exist only for npm-backend t
 Adopting the shortname matches what `mise use`/`mise install` write and what is physically
 installed; `apply`-ing the explicit form back can install a second copy under a different
 `installs/` dir. Repo policy (README §4.5) is to adopt mise's write, so no need to ask — but only for a mere `npm:<pkg>` ↔ shortname rename. A declaration *disappearing* leaves the CLI inactive (`mise which` fails), so ask per §3.
+
+### 3.1 OpenWhispr-owned Hypr files (mirrored, not patched)
+
+OpenWhispr (AUR `openwhispr-bin`) rewrites both files on every hotkey registration:
+
+- `~/.config/hypr/openwhispr-binds.lua` — rebuilt with its 2-line `MANAGED_HEADER_TEXT`
+  (`OpenWhispr keybinds (managed automatically)` + `If you delete this file, also remove
+  the matching load line from your Hyprland config.`); plain comment lines are preserved.
+- `~/.config/hypr/hyprland.lua` — appends `pcall(require, "<abs>/openwhispr-binds.lua")`.
+  Its filter removes only existing lines that contain the filename *and* start with
+  `pcall(require,` (i.e. not a portable module name).
+
+Repo policy: source mirrors the app's output **byte-for-byte** so the app's write is a
+no-op — `dot_config/hypr/hyprland.lua.tmpl` renders the absolute path via
+`{{ .chezmoi.homeDir }}`, and `openwhispr-binds.lua` carries the exact app header.
+Never restore the portable `pcall(require, "hypr.openwhispr-binds")` (commit `4aa5015`)
+or a trimmed header: the app recognizes neither, so it appends a duplicate absolute-path
+require (double load) or rewrites the header. Diagnose the diff first with
+`git log -S openwhispr -- dot_config/hypr/`.
+
+If drift reappears (an app upgrade changed its writer), re-derive the canonical output
+from the installed app and re-adopt:
+
+```bash
+grep -a -o -b 'openwhispr-binds' /opt/openwhispr/resources/app.asar     # find offsets
+dd if=/opt/openwhispr/resources/app.asar bs=1 skip=<offset> count=30000  # MANAGED_HEADER_TEXT / sourceLine
+```
+
+Update the template/header, `chezmoi apply --force`, then verify: `hyprctl configerrors`
+empty, the bind present (`hyprctl binds -j | grep -A5 F1`), `chezmoi status` clean.
 
 ## 4. Pull
 
@@ -169,8 +198,7 @@ chezmoi git -- log --oneline -3
 | `status` still lists entries right after piping `apply --verbose` into `head` | SIGPIPE killed chezmoi mid-apply; later entries never written | redirect apply to a log file (`> /tmp/opencode/apply.log 2>&1; echo exit:$?`), re-run, confirm exit 0 |
 | `MM` survives a full `apply --force` | one entry needs per-file pass | `apply --force --verbose <target>` again, then `status` |
 | `re-add` ignores a template drift | chezmoi refuses to overwrite templates | `chezmoi edit <target>`, hand-merge, `apply` |
-| `openwhispr-binds.lua` re-drifts after every apply | Omarchy auto-manages that file | `apply` once for a clean state; do not loop or `re-add` the stale comment back |
-| `hyprland.lua` + `openwhispr-binds.lua` both drift with the same mtime | OpenWhispr installer rewrites both: stale comment back, tabs in `window.open`, extra absolute-path `pcall(require, …)` appended | `apply --force` both files (portable module require wins), then `hyprctl configerrors`; never `re-add` the abs path |
+| `openwhispr-binds.lua` / `hyprland.lua` re-drift after an OpenWhispr upgrade | app's writer changed; source no longer mirrors its canonical output (§3.1) | re-derive the app's output from `app.asar` (§3.1), update template/header, `apply --force`; never `re-add` a stale header or restore the portable module require |
 | `shell.json` vs `private_shell.json` confusion | `private_` prefix = 0600 target `shell.json` | edit source `private_shell.json`, never assume a missing `shell.json` in source |
 | `MM` on a directory (e.g. `.pi/agent`), diff shows only `old mode 40700 / new mode 40755` | directory mode drift. `apply` reports the *state-recorded* mode; `chmod` on the source dir is ignored (probe: source `711` still wanted `755`), and `re-add` ignores all non-file entries | git-tracked fix: `git mv dot_pi/agent dot_pi/private_agent` (target = source mode & ^077 = 0700), `chezmoi apply`, then `status` clears. Portable to fresh clones — plain `chmod` is not |
 | `verify` exit 1 | drift remains | `status` + per-file `diff`, return to §3 |
