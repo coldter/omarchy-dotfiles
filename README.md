@@ -8,7 +8,8 @@ notify-only drift hook, and this documentation.
 - Omarchy v4 (quattro) · Hyprland · managed with [chezmoi](https://www.chezmoi.io/) (installed via mise)
 - chezmoi source: `$(chezmoi source-path)` (this repo) → GitHub: `coldter/omarchy-dotfiles` (public)
 - Profiles: `desktop` + `laptop1` (see §5 registry). This machine runs `desktop` (theme `matte-black`).
-- Also tracked: the **pi** coding agent's config (`~/.pi/agent/`) — see §2 and §4.6.
+- Also tracked: the **pi** and **omp** (oh-my-pi) coding agents' configs — `~/.pi/agent/`
+  (§4.6) and `~/.omp/agent/` + `~/.omp/plugins/` manifests (§4.8).
 
 **Contents:** §1 [Ownership model](#1-the-ownership-model-read-this-first) · §2 [Repo layout](#2-repo-layout) · §3 [New machine bootstrap](#3-new-machine-bootstrap-the-whole-point) · §4 [Daily workflows](#4-daily-workflows) · §5 [Machine profiles](#5-machine-profiles--per-machine-config) · §6 [Themes](#6-themes) · §7 [Safety](#7-safety-rules-this-is-a-public-repo) · §8 [For AI agents](#8-for-ai-agents) · §9 [Troubleshooting](#9-troubleshooting)
 
@@ -63,6 +64,11 @@ note it does **not** fire after `omarchy refresh` — check `chezmoi diff` manua
 │   ├── extensions/omarchy-system-theme.ts  # pi theme follows Omarchy light/dark mode
 │   ├── themes/private_omarchy-system.json  # → themes/omarchy-system.json (0600)
 │   └── skills/                       # symlink_ entries: omarchy, diagnose-crash, i-have-adhd
+├── dot_omp/private_agent/            # → ~/.omp/agent/ — omp (oh-my-pi) agent, dir 0700 (§2, §4.8)
+│   └── private_config.yml            # → config.yml (0600): model roles, symbol preset, setup state
+├── dot_omp/plugins/                  # → ~/.omp/plugins/ — plugin declarations (§4.8)
+│   ├── package.json                  # declared plugin set (node_modules/ is rebuilt — untracked)
+│   └── omp-plugins.lock.json         # per-plugin enabled state / features
 ├── dot_agents/skills/i-have-adhd/    # → ~/.agents/skills/i-have-adhd — target of that symlink
 ├── dot_config/
 │   ├── hypr/                         # hyprland.lua.tmpl + monitors.lua.tmpl (per-machine),
@@ -88,7 +94,7 @@ note it does **not** fire after `omarchy refresh` — check `chezmoi diff` manua
 |---|---|
 | `dot_bashrc` | `~/.bashrc` |
 | `private_shell.json` | `~/.config/omarchy/shell.json` with mode 0600 |
-| `private_agent` (a directory) | `~/.pi/agent/` with mode 0700 — `private_` strips group/world bits from directories too |
+| `private_agent` (a directory) | `~/.pi/agent/` (or `~/.omp/agent/`) with mode 0700 — `private_` strips group/world bits from directories too |
 | `executable_50-chezmoi-drift-check.hook` | target file with the executable bit set |
 | `*.tmpl` suffix | a Go template — rendered on apply, never copied verbatim |
 | `run_once_after_*` | a script that runs once per content-hash during `chezmoi apply` |
@@ -103,6 +109,16 @@ from `.chezmoi.toml.tmpl`. See §5 for its lifecycle.
 `npm/` (pi rebuilds it from the `packages` list in `settings.json`), the model
 catalogs `models-store.json` / `commandcode-models.json`, and `trust.json`
 (machine-local project paths).
+
+**Deliberately untracked under `~/.omp/`** (same rule — §7): `agent/agent.db`
+(**holds the provider credentials** in its `auth_credentials` table — log in
+again on a new machine), the other state DBs (`agent/history.db`,
+`agent/models.db`, `agent/skill-descriptions.db`), `agent/cache/`,
+`agent/sessions/`, `agent/terminal-sessions/`, `agent/last-changelog-version`
+(rewritten every omp upgrade), `plugins/node_modules/` + `plugins/bun.lock`
+(rebuilt from `plugins/package.json`), `logs/`, `natives/`, `run/`, `cache/`.
+Directories omp creates lazily under `agent/` (`rules/`, `agents/`,
+`managed-skills/`) get tracked with `chezmoi add` once you put something in them.
 
 ## 3. New machine bootstrap (the whole point)
 
@@ -138,6 +154,10 @@ keys, `gh auth login`, browser profiles, and secrets — see §7. The pi coding
 agent too is covered except for its login: `~/.pi/agent/auth.json` is a secret and
 stays untracked, so run `/login` inside pi on the new machine — pi then
 re-installs its npm packages from the tracked `settings.json` on first start.
+Same story for omp: its credentials live in the untracked `~/.omp/agent/agent.db`
+(log in inside omp), and its plugins rebuild from the tracked
+`~/.omp/plugins/package.json` — `bun install` in `~/.omp/plugins` (bun ships with
+Omarchy/mise) restores the declared set.
 
 ### 3.1 Machine #1 — create the remote and first push (once)
 
@@ -265,6 +285,29 @@ dd if=/opt/openwhispr/resources/app.asar bs=1 skip=<offset> count=30000   # MANA
 
 then update the template/header, `chezmoi apply` and verify (§9).
 
+### 4.8 Updating omp's config
+
+omp (oh-my-pi) writes its own config files, exactly like pi:
+
+- `~/.omp/agent/config.yml` — model roles (`modelRoles`), `symbolPreset`,
+  onboarding `setupVersion`; written by onboarding and `/model`-style changes.
+- `~/.omp/plugins/package.json` + `omp-plugins.lock.json` — the declared plugin
+  set and per-plugin enabled state; written by `omp plugin install|enable|disable`
+  and by omp's own reconciliation, which pins declared ranges to the installed
+  version (observed: `npm:pi-token-speed@^0.10.1` → `…@0.9.0`; `bun.lock` is
+  rewritten in lockstep but stays untracked).
+
+Adopt omp's writes like any other live file (§4.1):
+
+```bash
+chezmoi re-add ~/.omp          # config.yml + plugin manifests (DBs/node_modules stay untracked)
+chezmoi git -- add -A && chezmoi git -- commit -m "omp: …" && chezmoi git -- push
+```
+
+⚠ `agent/last-changelog-version` (omp's `lastChangelogVersion` analog) bumps on
+every upgrade — it is **untracked**, so it never shows up as drift. Credentials
+stay in the untracked `agent.db`; `/login` inside omp only.
+
 ## 5. Machine profiles & per-machine config
 
 Two configs are templated. `dot_config/hypr/monitors.lua.tmpl` contains one Lua
@@ -341,10 +384,13 @@ chezmoi is opt-in — only explicitly added files are tracked (a stray
 
 - **Never track:** `~/.config/gh/` (hosts.yml = OAuth token), `~/.ssh/`,
   `~/.local/share/opencode/` (auth.json), `~/.pi/agent/auth.json` (provider API key),
+  `~/.omp/agent/agent.db` (provider credentials live in its `auth_credentials` table),
   `~/.config/environment.d` secrets, `*.local` files, anything token-shaped
 - **Not worth tracking (generated state):** `~/.pi/agent/sessions/`,
   `~/.pi/agent/npm/`, `~/.pi/agent/models-store.json`, `~/.pi/agent/commandcode-models.json`,
-  `~/.pi/agent/trust.json` — see §2
+  `~/.pi/agent/trust.json`; omp's `agent/{history,models,skill-descriptions}.db`,
+  `agent/{sessions,terminal-sessions,cache}/`, `agent/last-changelog-version`,
+  `plugins/node_modules/`, `plugins/bun.lock`, `logs/`, `natives/`, `run/` — see §2
 - Periodic audit (cwd-independent — `chezmoi managed` prints `$HOME`-relative
   paths, so grep the source directly):
   ```bash
@@ -387,10 +433,12 @@ template in source.
 7. New files belong in the tracked set only after the user confirms they're
    wanted on every machine (zone 3/4 only — see §1).
 8. Validate Hyprland changes: `hyprctl reload && hyprctl configerrors` (must be empty).
-9. Commit messages: short, lowercase prefix (`pkg:`, `mise:`, `monitors:`, `hypr:`, `omarchy:`, `docs:`, `agents:`).
+9. Commit messages: short, lowercase prefix (`pkg:`, `mise:`, `monitors:`, `hypr:`, `omarchy:`, `docs:`, `agents:`, `pi:`, `omp:`).
 10. The drift hook must always exit 0 and never apply changes — keep it that way.
-11. pi's config (`~/.pi/agent/`) is tracked, but `auth.json`, `sessions/`, `npm/`,
-    the model catalogs and `trust.json` must stay **untracked** (§2, §7).
+11. pi's (`~/.pi/agent/`) and omp's (`~/.omp/agent/`, `~/.omp/plugins/`) configs are
+    tracked, but the credential stores (`pi` `auth.json`, omp `agent/agent.db`), sessions,
+    `npm/`/`node_modules/`, the model catalogs, `trust.json` and omp's
+    `last-changelog-version` must stay **untracked** (§2, §7, §4.8).
 
 ## 9. Troubleshooting
 
@@ -407,6 +455,8 @@ template in source.
 | A tracked file you no longer want (`chezmoi managed` lists the tracked set) | `chezmoi forget <path>` — removes from source, keeps the live file |
 | `chezmoi diff` shows only `lastChangelogVersion` in `~/.pi/agent/settings.json` | Expected after a pi upgrade — adopt it: `chezmoi re-add ~/.pi/agent/settings.json` (§4.6) |
 | `hyprland.lua` / `openwhispr-binds.lua` drift after OpenWhispr starts | OpenWhispr's writer changed (upgrade) — output no longer matches our mirrored source (§4.7) | Re-derive the app's canonical output and re-adopt (§4.7); never restore the portable module require or a trimmed header |
-| `MM` on a directory (`.pi/agent`) showing only a mode diff | Directory modes are **not** read from the source dir's mode — `chmod` there is ignored by `apply`, and `re-add` skips directories | Carry it in the name: `dot_pi/private_agent` → `~/.pi/agent` at 0700 (`private_` = source mode & ^077). Rename + `chezmoi apply` |
+| `MM` on a directory (`.pi/agent`, `.omp/agent`) showing only a mode diff | Directory modes are **not** read from the source dir's mode — `chmod` there is ignored by `apply`, and `re-add` skips directories | Carry it in the name: `dot_pi/private_agent` → `~/.pi/agent` (and `dot_omp/private_agent` → `~/.omp/agent`) at 0700 (`private_` = source mode & ^077). Rename + `chezmoi apply` |
+| `chezmoi diff` shows `~/.omp/agent/config.yml` or `~/.omp/plugins/*` changed | Expected after an omp settings/plugin change (omp writes its own config) — adopt: `chezmoi re-add ~/.omp` (§4.8) |
+| omp plugins missing after restore | They are declared in the tracked `~/.omp/plugins/package.json` — `bun install` in `~/.omp/plugins` restores them (§3) |
 | pi skill missing after restore (`~/.pi/agent/skills/i-have-adhd` dangles) | Its target is tracked too: `~/.agents/skills/i-have-adhd` — check `chezmoi status`/`apply` |
 | Machine boots with fallback monitor config | Its profile has no block in `monitors.lua.tmpl` — add one (§5) |

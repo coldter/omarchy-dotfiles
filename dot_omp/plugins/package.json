@@ -1,0 +1,7 @@
+{
+  "name": "omp-plugins",
+  "private": true,
+  "dependencies": {
+    "pi-token-speed": "npm:pi-token-speed@0.9.0"
+  }
+}

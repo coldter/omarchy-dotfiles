@@ -1,0 +1,4 @@
+modelRoles:
+  default: commandcode/deepseek/deepseek-v4.1-flash:max
+setupVersion: 2
+symbolPreset: nerd
