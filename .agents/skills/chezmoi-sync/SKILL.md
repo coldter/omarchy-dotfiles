@@ -76,6 +76,7 @@ Name decoding: source `private_shell.json` → target `shell.json` (`private_` =
 | `MM` on `.config/mise/config.toml` (source `npm:<pkg>` vs live shortname) | mise rewrote it: adopt per README §4.5 — `chezmoi re-add <target>`, commit `mise: …`, push |
 | `MM` on `.pi/agent/settings.json`, only `lastChangelogVersion` older in source | pi's own write on every upgrade; README §4.6 calls it expected drift — `re-add` (never `apply` the stale value back) |
 | `MM` on `.config/Code/User/settings.json` (live newer than last commit; formatter / `github.copilot.enable` keys differ) | VS Code UI writes this file — adopt live (`re-add`), per repo precedent `vscode: adopt live …` |
+| `MM` on `.config/mise/config.toml` where live **added** a backend-explicit key (e.g. `"github:can1357/oh-my-pi" = "latest"`) | a `mise use` write — live config mtime ≈ the new `installs/<backend>-<owner>-<repo>/` mtime proves the author (e.g. `installs/github-can1357-oh-my-pi` + `omp` bin). NOT a mere rename: `apply` drops the declaration and `auto_prune = true` eventually prunes the install. Adopt per README §4.5 (`re-add`), never `apply` |
 | `MM` on `.config/mise/config.toml` where live **dropped** a declared `"npm:<pkg>"` line | not a normalizing rewrite — `mise registry <t>` errors, so `npm:` is the only valid form. Probe `mise ls <t>` / `mise which <t>`; installed-but-*inactive* means the declaration is gone: ask whether to adopt the removal (`re-add`, tool becomes orphan/prunable) or restore (`apply`) |
 | `MM` on a **directory** (e.g. `.pi/agent`) | dir mode drift only — target dir mode is NOT taken from the source dir's mode (`chmod` the source dir is ignored), and `re-add` skips non-files. Rename the source dir with the `private_` attribute (e.g. `dot_pi/private_agent` → 0700); never plain-`chmod` it |
 | Unsure | show the per-file `chezmoi diff`, ask user: adopt (`re-add`) or reject (`apply`) |
@@ -179,6 +180,21 @@ git rev-list --left-right --count HEAD...@{u}          # expect 0 0
 
 If nothing was re-added, there is nothing to commit — do NOT create empty commits. `git status -sb` staying `## master...origin/master` with no push needed is the normal `apply`-only outcome.
 
+**Push 403 (`Permission to <repo> denied to <you>`)** → git's helper is `gh auth git-credential`
+(`~/.config/git/config`), and gh resolves the token as env `GH_TOKEN`/`GITHUB_TOKEN` **first**, ahead of
+its keyring OAuth token. When the env var holds a fine-grained PAT (`github_pat_…`) scoped to other
+repos, the identity matches but the write is denied. Re-run the push with the env var unset (falls back
+to the keyring `gho_…` token, scopes incl. `repo`) — no config change needed:
+
+```bash
+env -u GITHUB_TOKEN chezmoi git -- push
+```
+
+Diagnose with: `git config --list --show-origin | grep -i credential` (expect
+`credential.https://github.com.helper=!/usr/bin/gh auth git-credential`) and
+`printf 'protocol=https\nhost=github.com\n\n' | env -u GITHUB_TOKEN git credential fill`
+(expect `username=coldter`, `password=gho_…`; with the env token it returns the PAT instead).
+
 ## 7. Validation (SLO — every run ends here)
 
 ```bash
@@ -204,6 +220,7 @@ chezmoi git -- log --oneline -3
 | `verify` exit 1 | drift remains | `status` + per-file `diff`, return to §3 |
 | mise config re-drifts (`  M`/`MM` on `config.toml`) | `mise use`/`mise upgrade`/`mise prune` rewrites the whole tools table, normalizing `npm:<pkg>` specs to registry shortnames | adopt with `re-add` (README §4.5) instead of re-`apply`-ing the long form — see §3 backend note |
 | `mise which <tool>` → "is a mise bin however it is not currently active" | tool still installed under `installs/`, but live `config.toml` no longer declares it (mise never drops a resolvable `npm:` key on its own — `mise registry <tool>` errors, so no shortname exists) | `chezmoi diff ~/.config/mise/config.toml`; decide per §3 (adopt removal vs restore declaration) — with `auto_prune = true` an undeclared install is eventually deleted |
+| `git push` → `403` / `Permission to <repo> denied to <user>` | git's helper is `gh auth git-credential`, which prefers env `GITHUB_TOKEN` (fine-grained PAT, no write on this repo) over the keyring `gho_…` token that carries `repo` scope | re-run just the push with the env var unset: `env -u GITHUB_TOKEN chezmoi git -- push` — see the §6 auth note |
 | `pull --ff-only` refuses | diverged (local commits + upstream) | resolve per §4 conflict flow, or push first if ahead-only |
 | Template parse error on apply | `else if` placed after `else` | move new machine block above `{{ else }}` fallback |
 
