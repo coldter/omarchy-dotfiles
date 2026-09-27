@@ -15,6 +15,7 @@ pnpm = "latest"
 usage = "latest"
 pi = "latest"
 "github:can1357/oh-my-pi" = "latest"
+copilot = "latest"
 
 [settings.upgrade]
 auto_prune = true
