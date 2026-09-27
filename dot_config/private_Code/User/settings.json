@@ -482,7 +482,6 @@
     "GitHub.vscode-pull-request-github"
   ],
   "workbench.editor.editorActionsLocation": "titleBar",
-  "workbench.sideBar.location": "right",
   "docker.extension.enableComposeLanguageServer": false,
   "chat.mcp.autostart": "newAndOutdated",
   "chat.mcp.gallery.enabled": true,
@@ -534,5 +533,6 @@
   // is the old, no-longer-supported name.)
   "biome.requireConfiguration": true,
   "better-todo-tree.ripgrep.ripgrep": "/usr/bin/rg",
-  "chat.viewSessions.orientation": "stacked"
+  "chat.viewSessions.orientation": "stacked",
+  "workbench.sideBar.location": "right"
 }
