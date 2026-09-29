@@ -1,5 +1,6 @@
 modelRoles:
-  default: commandcode/deepseek/deepseek-v4.1-flash:max
+  slow: commandcode/deepseek/deepseek-v4.1-flash
+  default: commandcode/deepseek/deepseek-v4.1-flash-fast:max
 setupVersion: 2
 symbolPreset: nerd
 statusLine:
