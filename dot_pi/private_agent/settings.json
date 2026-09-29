@@ -4,6 +4,9 @@
   "defaultProvider": "commandcode",
   "defaultModel": "deepseek/deepseek-v4.1-flash",
   "defaultThinkingLevel": "max",
+  "subagents": {
+    "defaultModel": "commandcode/deepseek/deepseek-v4.1-flash"
+  },
   "packages": [
     "npm:pi-subagents",
     "npm:pi-web-access",
