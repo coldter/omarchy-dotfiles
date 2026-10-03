@@ -2,6 +2,7 @@
 README.md
 packages
 skills-lock.json
+.gitignore
 
 # Vendored project skills for this repo (installed via skills.sh / npx skills add).
 # Source-only: agents load them as *project* skills while this repo is the cwd —

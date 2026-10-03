@@ -185,6 +185,7 @@ Tracking is opt-in (`chezmoi add`) — a stray `git add -A` in `~/.config` can't
 - **Never track:** `~/.config/gh/` (OAuth token), `~/.ssh/`, `~/.local/share/opencode/` (auth), `~/.pi/agent/auth.json`, `~/.omp/agent/agent.db` (credentials), `~/.config/environment.d` secrets, `*.local`, anything token-shaped.
 - **Not worth tracking:** the generated state listed in §2 (agent DBs, sessions/caches, `node_modules`, `last-changelog-version`, npm rebuilds, model catalogs).
 - Audit: `grep -rEi 'token|secret|api[_-]?key|password' "$(chezmoi source-path)" --exclude-dir=.git --exclude-dir=.agents`
+- Guard: the root `.gitignore` mirrors this list, so an accidental `chezmoi add <secret>` + `git add -A` cannot stage it (verify: `git check-ignore -v dot_pi/private_agent/private_auth.json`; `.chezmoiignore` keeps that file out of `$HOME`).
 - Secrets-adjacent files: edit in place, never `chezmoi add`.
 
 ## 8. For AI agents

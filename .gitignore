@@ -1,0 +1,29 @@
+# Secret guard — enforces README §7 "Never track" in a public repo.
+# Protects against an accidental `chezmoi add <secret>` followed by `git add -A`.
+# Verify: git check-ignore -v dot_pi/private_agent/private_auth.json
+
+# pi / omp credential stores
+dot_pi/private_agent/private_auth.json
+dot_pi/private_agent/private_mcp-auth.json
+dot_omp/private_agent/agent.db
+dot_omp/private_agent/private_agent.db
+
+# gh CLI OAuth token (~/.config/gh/hosts.yml)
+dot_config/gh/
+dot_config/private_gh/
+
+# other locations README §7 lists as never-track
+dot_config/environment.d/
+dot_local/share/opencode/
+
+# generic secret shapes (chezmoi source names carry private_ attributes)
+**/auth.json
+**/private_auth.json
+**/mcp-auth.json
+**/private_mcp-auth.json
+**/hosts.yml
+**/private_hosts.yml
+**/agent.db
+**/*.local
+.env
+.env.*
