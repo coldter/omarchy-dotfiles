@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.87.1",
+  "lastChangelogVersion": "1.0.0",
   "theme": "dark",
   "defaultProvider": "commandcode",
   "defaultModel": "deepseek/deepseek-v4.1-flash",
@@ -17,5 +17,9 @@
   ],
   "tuiMode": "fullscreen",
   "fullscreenExitOutput": "transcript",
-  "hideThinkingBlock": true
+  "hideThinkingBlock": true,
+  "defaultTools": ["+codemode"],
+  "extensions": [
+    "-builtin:mcp"
+  ]
 }
