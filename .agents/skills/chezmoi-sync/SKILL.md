@@ -220,6 +220,9 @@ chezmoi diff 2>&1 | head -n 5          # empty required
 git status -sb                         # ## master...origin/master, no markers
 git rev-list --left-right --count HEAD...@{u}          # 0 0 required
 chezmoi git -- log --oneline -3
+# secrets sanity (README §7) — expect no matches, then guard:ok
+git grep -I -n -E 'sk-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY' -- . | head
+git check-ignore -q --no-index dot_pi/private_agent/private_auth.json && echo "secret-guard:ok"
 ```
 
 ## Troubleshooting
@@ -238,6 +241,7 @@ chezmoi git -- log --oneline -3
 | mise config re-drifts (`  M`/`MM` on `config.toml`) | `mise use`/`mise upgrade`/`mise prune` rewrites the whole tools table, normalizing `npm:<pkg>` specs to registry shortnames | adopt with `re-add` (README §4.5) instead of re-`apply`-ing the long form — see §3 backend note |
 | `mise which <tool>` → "is a mise bin however it is not currently active" | tool still installed under `installs/`, but live `config.toml` no longer declares it (mise never drops a resolvable `npm:` key on its own — `mise registry <tool>` errors, so no shortname exists) | `chezmoi diff ~/.config/mise/config.toml`; decide per §3 (adopt removal vs restore declaration) — with `auto_prune = true` an undeclared install is eventually deleted |
 | `git push` → `403` / `Permission to <repo> denied to <user>` | git's helper is `gh auth git-credential`, which prefers env `GITHUB_TOKEN` (fine-grained PAT, no write on this repo) over the keyring `gho_…` token that carries `repo` scope | re-run just the push with the env var unset: `env -u GITHUB_TOKEN chezmoi git -- push` — see the §6 auth note |
+| Credential store would be staged (`chezmoi add ~/.pi/agent/auth.json` + `git add -A`) | root `.gitignore` mirrors README §7; if it still stages, the pattern is missing | `git check-ignore -v <source-file>`, add the pattern; if a secret was already pushed, rotate it first, then rewrite history — deleting the file is not enough |
 | `pull --ff-only` refuses | diverged (local commits + upstream) | resolve per §4 conflict flow, or push first if ahead-only |
 | Template parse error on apply | `else if` placed after `else` | move new machine block above `{{ else }}` fallback |
 
