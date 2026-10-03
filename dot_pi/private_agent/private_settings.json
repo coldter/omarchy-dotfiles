@@ -2,8 +2,11 @@
   "lastChangelogVersion": "1.0.0",
   "theme": "dark",
   "defaultProvider": "commandcode",
-  "defaultModel": "deepseek/deepseek-v4.1-flash",
+  "defaultModel": "deepseek/deepseek-v4.1-flash-fast",
   "defaultThinkingLevel": "max",
+  "modelThinkingLevels": {
+    "commandcode/deepseek/deepseek-v4.1-flash-fast": "max"
+  },
   "subagents": {
     "defaultModel": "commandcode/deepseek/deepseek-v4.1-flash"
   },
@@ -18,7 +21,9 @@
   "tuiMode": "fullscreen",
   "fullscreenExitOutput": "transcript",
   "hideThinkingBlock": true,
-  "defaultTools": ["+codemode"],
+  "defaultTools": [
+    "+codemode"
+  ],
   "extensions": [
     "-builtin:mcp"
   ]

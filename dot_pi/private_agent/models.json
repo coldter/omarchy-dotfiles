@@ -1,0 +1,22 @@
+{
+  "providers": {
+    "commandcode": {
+      "modelOverrides": {
+        "deepseek/deepseek-v4.1-flash-fast": {
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": "low",
+            "medium": null,
+            "high": "high",
+            "xhigh": null,
+            "max": "max"
+          },
+          "compat": {
+            "supportsReasoningEffort": true
+          }
+        }
+      }
+    }
+  }
+}
