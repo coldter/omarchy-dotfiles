@@ -15,6 +15,19 @@ allowed-tools: Read, Edit, Bash
 - After an Omarchy update/refresh (it rewrites managed files)
 - Any merge/apply conflict in the chezmoi source repo
 
+## Codemode Requested ("use codemode")
+
+`codemode` is a built-in extension tool and is **off** unless enabled: it needs
+`"defaultTools": ["+codemode"]` in `~/.pi/agent/settings.json` (chezmoi-managed → `re-add`,
+commit `pi:`, push; see §3 settings.json row). It activates only at session start — a running
+session picks it up with `/reload` (`docs/settings.md`: `/reload` enables tools newly added to
+`defaultTools`). MCP servers with `codemode` exposure auto-enable it only while the MCP
+extension is loaded, so `"extensions": ["-builtin:mcp"]` makes `defaultTools` the only path.
+
+When codemode is unavailable in the running session, run the phases as **batched bash with
+aggregated output** (one call per phase, verbose output redirected to files) instead of faking
+`tools.*` scripts or spawning a nested `pi --print` agent just to get them.
+
 ## 0. Preflight
 
 ```bash
