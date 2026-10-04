@@ -16,6 +16,7 @@ usage = "latest"
 pi = "latest"
 "github:can1357/oh-my-pi" = "latest"
 copilot = "latest"
+gh = "latest"
 
 [settings.upgrade]
 auto_prune = true
