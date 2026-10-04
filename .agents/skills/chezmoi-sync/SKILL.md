@@ -15,18 +15,9 @@ allowed-tools: Read, Edit, Bash
 - After an Omarchy update/refresh (it rewrites managed files)
 - Any merge/apply conflict in the chezmoi source repo
 
-## Codemode Requested ("use codemode")
+## Codemode
 
-`codemode` is a built-in extension tool and is **off** unless enabled: it needs
-`"defaultTools": ["+codemode"]` in `~/.pi/agent/settings.json` (chezmoi-managed → `re-add`,
-commit `pi:`, push; see §3 settings.json row). It activates only at session start — a running
-session picks it up with `/reload` (`docs/settings.md`: `/reload` enables tools newly added to
-`defaultTools`). MCP servers with `codemode` exposure auto-enable it only while the MCP
-extension is loaded, so `"extensions": ["-builtin:mcp"]` makes `defaultTools` the only path.
-
-When codemode is unavailable in the running session, run the phases as **batched bash with
-aggregated output** (one call per phase, verbose output redirected to files) instead of faking
-`tools.*` scripts or spawning a nested `pi --print` agent just to get them.
+`codemode` is on by default (`defaultTools: ["+codemode"]` in the tracked `~/.pi/agent/settings.json`, README §4.6). If a session lacks it, run the phases as **batched bash with aggregated output** (one call per phase, verbose output redirected to files) — do not fake `tools.*` scripts or spawn a nested `pi --print` agent.
 
 ## 0. Preflight
 
@@ -73,9 +64,9 @@ Status columns (`chezmoi status --help`): col-1 = last-written vs actual (your e
 | ---- | ------- |
 | ` M` | source changed (e.g. just pulled) — `apply` will update target |
 | `MM` | both sides changed — `apply` needs review, may need `--force` |
-| `MM` on `hyprland.lua` + `openwhispr-binds.lua` | OpenWhispr rewrote its **app-owned** files. Source mirrors the app's canonical output byte-for-byte, so a rewrite is a no-op (§3.1). Drift that recurs after an app upgrade = the app changed its writer → re-derive and re-adopt (§3.1) |
+| `MM` on `hyprland.lua` + `openwhispr-binds.lua` | OpenWhispr rewrote its **app-owned** files; source mirrors the app's output byte-for-byte, so a rewrite is a no-op. Recurring drift after an app upgrade → re-derive per README §4.7 |
 
-Name decoding: source `private_shell.json` → target `shell.json` (`private_` = 0600, not a name change). `*.tmpl` files never render 1:1 — check with `chezmoi cat <target>`.
+Name decoding: source `private_shell.json` → target `shell.json` (`private_` = 0600, not a name change); `chezmoi source-path <target>` resolves a target to its source file. `*.tmpl` files never render 1:1 — check with `chezmoi cat <target>`.
 
 ## 3. Decision Matrix (per file)
 
@@ -85,60 +76,13 @@ Name decoding: source `private_shell.json` → target `shell.json` (`private_` =
 | You edited target and want to keep it | `chezmoi re-add <target>` (target wins → new source commit → push) |
 | Omarchy rewrote a managed file, source version is intentional (e.g. deduped comments) | `apply --force` (source wins; drift will likely return — do NOT loop) |
 | Drift is in a `*.tmpl` rendered file (e.g. `monitors.lua`) | NEVER `re-add` (chezmoi refuses templates). `chezmoi edit <target>` the template, then `apply` |
-| `lifeExpectancy`-style value drift where source is already committed | `apply` (target stale) |
-| `MM` on `.config/mise/config.toml` (source `npm:<pkg>` vs live shortname) | mise rewrote it: adopt per README §4.5 — `chezmoi re-add <target>`, commit `mise: …`, push |
-| `MM` on `.pi/agent/settings.json`, only `lastChangelogVersion` older in source | pi's own write on every upgrade; README §4.6 calls it expected drift — `re-add` (never `apply` the stale value back) |
-| `MM` on `.omp/agent/config.yml` (`modelRoles`/`symbolPreset`/`setupVersion` differ live) | omp (oh-my-pi) writes its own config (onboarding, model selection); README §4.8 — adopt live (`re-add ~/.omp`), never `apply` a stale value back |
-| `MM` on `.omp/plugins/package.json` / `omp-plugins.lock.json` | `omp plugin install\|enable\|disable` wrote them — adopt live (`re-add`); `node_modules/` + `bun.lock` are untracked and rebuilt by `bun install` |
-| `MM` on `.config/Code/User/settings.json` (live newer than last commit; formatter / `github.copilot.enable` keys differ) | VS Code UI writes this file — adopt live (`re-add`), per repo precedent `vscode: adopt live …` |
-| `MM` on `.config/mise/config.toml` where live **added** a backend-explicit key (e.g. `"github:can1357/oh-my-pi" = "latest"`) | a `mise use` write — live config mtime ≈ the new `installs/<backend>-<owner>-<repo>/` mtime proves the author (e.g. `installs/github-can1357-oh-my-pi` + `omp` bin). NOT a mere rename: `apply` drops the declaration and `auto_prune = true` eventually prunes the install. Adopt per README §4.5 (`re-add`), never `apply` |
-| `MM` on `.config/mise/config.toml` where live **dropped** a declared `"npm:<pkg>"` line | not a normalizing rewrite — `mise registry <t>` errors, so `npm:` is the only valid form. Probe `mise ls <t>` / `mise which <t>`; installed-but-*inactive* means the declaration is gone: ask whether to adopt the removal (`re-add`, tool becomes orphan/prunable) or restore (`apply`) |
-| `MM` on `.pi/agent/mcp-adapter.json` (`settings`/imports/overrides changed live) | pi-mcp-adapter wrote it (setup panel, `/mcp-adapter enable\|disable`, imports). `packages` + `-builtin:mcp` stay in `settings.json` | adopt live (`re-add`) — the adapter owns this file |
-| `MM` on a **directory** (e.g. `.pi/agent`, `.omp/agent`) | dir mode drift only — target dir mode is NOT taken from the source dir's mode (`chmod` the source dir is ignored), and `re-add` skips non-files. Rename the source dir with the `private_` attribute (e.g. `dot_pi/private_agent`, `dot_omp/private_agent` → 0700); never plain-`chmod` it |
+| `MM` on mise `config.toml` | mise's own write — adopt live (`re-add`); backend-explicit adds, dropped declarations, and the shortname/backend probes are README §4.5 |
+| `MM` on `.pi/agent/settings.json` / `mcp-adapter.json` | pi / pi-mcp-adapter own these — adopt live (`re-add`); README §4.6 |
+| `MM` on `.omp/agent/config.yml` / `.omp/plugins/*` | omp owns these — adopt live (`re-add ~/.omp`); `node_modules`/`bun.lock` stay untracked, rebuilt by `bun install`; README §4.8 |
+| `MM` on `.config/Code/User/settings.json` | VS Code UI writes it — adopt live (`re-add`), commit `vscode:` |
+| `MM` on `hyprland.lua` / `openwhispr-binds.lua` | OpenWhispr owns these — mirrored byte-for-byte, so its rewrite is a no-op; never `re-add` a stale header; re-derive per README §4.7 |
+| `MM` on a **directory** (e.g. `.pi/agent`, `.omp/agent`), mode-only diff | dir-mode drift: target mode comes from the source dir **name** (`private_agent`), not `chmod` (ignored) and not `re-add` (skips dirs) |
 | Unsure | show the per-file `chezmoi diff`, ask user: adopt (`re-add`) or reject (`apply`) |
-
-Before treating a mise `npm:<pkg>` ↔ shortname pair as cosmetic, resolve the backend — a
-shortname may pick a *different* backend than the explicit spec:
-
-```bash
-mise registry <name>   # shortname → backend priority list (first match wins)
-cat ~/.local/share/mise/installs/<name>/.mise.backend.toml  # e.g. full = "aqua:earendil-works/pi", explicit_backend = false
-ls ~/.local/share/mise/installs/   # npm-<pkg> dirs exist only for npm-backend tools
-```
-
-Adopting the shortname matches what `mise use`/`mise install` write and what is physically
-installed; `apply`-ing the explicit form back can install a second copy under a different
-`installs/` dir. Repo policy (README §4.5) is to adopt mise's write, so no need to ask — but only for a mere `npm:<pkg>` ↔ shortname rename. A declaration *disappearing* leaves the CLI inactive (`mise which` fails), so ask per §3.
-
-### 3.1 OpenWhispr-owned Hypr files (mirrored, not patched)
-
-OpenWhispr (AUR `openwhispr-bin`) rewrites both files on every hotkey registration:
-
-- `~/.config/hypr/openwhispr-binds.lua` — rebuilt with its 2-line `MANAGED_HEADER_TEXT`
-  (`OpenWhispr keybinds (managed automatically)` + `If you delete this file, also remove
-  the matching load line from your Hyprland config.`); plain comment lines are preserved.
-- `~/.config/hypr/hyprland.lua` — appends `pcall(require, "<abs>/openwhispr-binds.lua")`.
-  Its filter removes only existing lines that contain the filename *and* start with
-  `pcall(require,` (i.e. not a portable module name).
-
-Repo policy: source mirrors the app's output **byte-for-byte** so the app's write is a
-no-op — `dot_config/hypr/hyprland.lua.tmpl` renders the absolute path via
-`{{ .chezmoi.homeDir }}`, and `openwhispr-binds.lua` carries the exact app header.
-Never restore the portable `pcall(require, "hypr.openwhispr-binds")` (commit `4aa5015`)
-or a trimmed header: the app recognizes neither, so it appends a duplicate absolute-path
-require (double load) or rewrites the header. Diagnose the diff first with
-`git log -S openwhispr -- dot_config/hypr/`.
-
-If drift reappears (an app upgrade changed its writer), re-derive the canonical output
-from the installed app and re-adopt:
-
-```bash
-grep -a -o -b 'openwhispr-binds' /opt/openwhispr/resources/app.asar     # find offsets
-dd if=/opt/openwhispr/resources/app.asar bs=1 skip=<offset> count=30000  # MANAGED_HEADER_TEXT / sourceLine
-```
-
-Update the template/header, `chezmoi apply --force`, then verify: `hyprctl configerrors`
-empty, the bind present (`hyprctl binds -j | grep -A5 F1`), `chezmoi status` clean.
 
 ## 4. Pull
 
@@ -233,13 +177,9 @@ git check-ignore -q --no-index dot_pi/private_agent/private_auth.json && echo "s
 | `status` still lists entries right after piping `apply --verbose` into `head` | SIGPIPE killed chezmoi mid-apply; later entries never written | redirect apply to a log file (`> /tmp/opencode/apply.log 2>&1; echo exit:$?`), re-run, confirm exit 0 |
 | `MM` survives a full `apply --force` | one entry needs per-file pass | `apply --force --verbose <target>` again, then `status` |
 | `re-add` ignores a template drift | chezmoi refuses to overwrite templates | `chezmoi edit <target>`, hand-merge, `apply` |
-| `openwhispr-binds.lua` / `hyprland.lua` re-drift after an OpenWhispr upgrade | app's writer changed; source no longer mirrors its canonical output (§3.1) | re-derive the app's output from `app.asar` (§3.1), update template/header, `apply --force`; never `re-add` a stale header or restore the portable module require |
-| `shell.json` vs `private_shell.json` confusion | `private_` prefix = 0600 target `shell.json` | edit source `private_shell.json`, never assume a missing `shell.json` in source |
-| `MM` on a directory (e.g. `.pi/agent`), diff shows only `old mode 40700 / new mode 40755` | directory mode drift. `apply` reports the *state-recorded* mode; `chmod` on the source dir is ignored (probe: source `711` still wanted `755`), and `re-add` ignores all non-file entries | git-tracked fix: `git mv dot_pi/agent dot_pi/private_agent` (target = source mode & ^077 = 0700), `chezmoi apply`, then `status` clears. Portable to fresh clones — plain `chmod` is not |
-| A tracked file needs `0600` but its source name is plain (e.g. `private_agent/settings.json`) | target file mode comes from the source **name** on a fresh clone: plain → `0644`, `private_` → `0600` (probe: scratch `private_f` → 0600, renamed to `f` → 0644 after `apply`). Live 600 + plain name is local-only luck | `chezmoi add <target>` encodes the live mode automatically (0600 target → `private_<name>`); fix legacy names with `git mv <dir>/<file> <dir>/private_<file>` then `apply`. Durable: pi's `atomicWriteFile` (`FILE_CREATE_MODE=0o600`) and the adapter's `writeConfigText` both preserve the existing target mode |
+| `openwhispr-binds.lua` / `hyprland.lua` re-drift after an OpenWhispr upgrade | app's writer changed; source no longer mirrors its canonical output | re-derive the app's output (README §4.7), update template/header, `apply --force`; never `re-add` a stale header |
+| A tracked file needs `0600` but its source name is plain | target file mode comes from the source **name** on a fresh clone (plain → `0644`, `private_` → `0600`); pi's and the adapter's writers both preserve the existing mode | `git mv <dir>/<file> <dir>/private_<file>`, then `apply` (`chezmoi add` encodes the mode automatically). Probe an app's new-file mode empirically (`stat -c %a`) rather than reading its bundle |
 | `verify` exit 1 | drift remains | `status` + per-file `diff`, return to §3 |
-| mise config re-drifts (`  M`/`MM` on `config.toml`) | `mise use`/`mise upgrade`/`mise prune` rewrites the whole tools table, normalizing `npm:<pkg>` specs to registry shortnames | adopt with `re-add` (README §4.5) instead of re-`apply`-ing the long form — see §3 backend note |
-| `mise which <tool>` → "is a mise bin however it is not currently active" | tool still installed under `installs/`, but live `config.toml` no longer declares it (mise never drops a resolvable `npm:` key on its own — `mise registry <tool>` errors, so no shortname exists) | `chezmoi diff ~/.config/mise/config.toml`; decide per §3 (adopt removal vs restore declaration) — with `auto_prune = true` an undeclared install is eventually deleted |
 | `git push` → `403` / `Permission to <repo> denied to <user>` | git's helper is `gh auth git-credential`, which prefers env `GITHUB_TOKEN` (fine-grained PAT, no write on this repo) over the keyring `gho_…` token that carries `repo` scope | re-run just the push with the env var unset: `env -u GITHUB_TOKEN chezmoi git -- push` — see the §6 auth note |
 | Credential store would be staged (`chezmoi add ~/.pi/agent/auth.json` + `git add -A`) | root `.gitignore` mirrors README §7; if it still stages, the pattern is missing | `git check-ignore -v <source-file>`, add the pattern; if a secret was already pushed, rotate it first, then rewrite history — deleting the file is not enough |
 | `pull --ff-only` refuses | diverged (local commits + upstream) | resolve per §4 conflict flow, or push first if ahead-only |
