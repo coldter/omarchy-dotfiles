@@ -78,6 +78,7 @@ chezmoi git -- push -u origin master
 ```bash
 chezmoi managed            # tracked files        chezmoi unmanaged   # untracked files in $HOME
 chezmoi status             # current drift        chezmoi cat <target>  # preview a render, no apply
+chezmoi source-path <target>   # a target's source file (resolves private_/dot_ names)
 ```
 
 ### 4.1 Edit configs (the only habit)
@@ -121,7 +122,7 @@ mise use -g <tool>@<version>   # writes tracked ~/.config/mise/config.toml
 chezmoi re-add && chezmoi git -- add -A && chezmoi git -- commit -m "mise: <tool>" && chezmoi git -- push
 ```
 
-mise rewrites/normalizes this file (`upgrade`, `prune`, shortname forms) — adopt (`re-add`), never `apply` a stale spec back.
+mise rewrites/normalizes this file (`upgrade`, `prune`, shortname forms) — adopt (`re-add`), never `apply` a stale spec back. Two live differences are *not* mere renames, and both are mise's own writes: live **added** a backend-explicit key (e.g. `"github:can1357/oh-my-pi" = "latest"`) — adopt it (`apply` drops the declaration and `auto_prune` eventually prunes the install); live **dropped** a declared `"npm:<pkg>"` line — the tool becomes installed-but-inactive (`mise which` fails), so ask whether to adopt the removal or restore. Before treating `npm:<pkg>` ↔ shortname as cosmetic, resolve the backend (`mise registry <name>`, `cat ~/.local/share/mise/installs/<name>/.mise.backend.toml`, `ls ~/.local/share/mise/installs/`) — `apply`-ing the explicit form back can install a second copy under another `installs/` dir.
 
 ### 4.6 pi config
 
@@ -132,11 +133,13 @@ chezmoi re-add ~/.pi/agent/settings.json     # or just: chezmoi re-add
 # then commit "pi: …" + push — /login only writes the untracked auth.json
 ```
 
+`mcp-adapter.json` (source `dot_pi/private_agent/private_mcp-adapter.json`) is owned by pi-mcp-adapter (setup panel, `/mcp-adapter`, imports) — adopt live; the `packages` list and `-builtin:mcp` stay in `settings.json`.
+
 `lastChangelogVersion` bumps on every pi upgrade — expected drift, adopt it (or defer until the next real change).
 
 ### 4.7 OpenWhispr-owned Hyprland files — mirror, never patch
 
-OpenWhispr rewrites them on every hotkey registration: `openwhispr-binds.lua` (canonical 2-line header, plain comments preserved) and appends `pcall(require, "<abs>/openwhispr-binds.lua")` to `hyprland.lua`. Our source mirrors the output **byte-for-byte** (`hyprland.lua.tmpl` renders the absolute path), so the app's write is a no-op — never restore the portable module name `hypr.openwhispr-binds` (commit `4aa5015`) or trim the header; the app recognizes neither (duplicate require + header rewrite). If drift returns after an upgrade, re-derive and re-adopt:
+OpenWhispr rewrites them on every hotkey registration: `openwhispr-binds.lua` (its `MANAGED_HEADER_TEXT` is exactly `OpenWhispr keybinds (managed automatically)` + `If you delete this file, also remove the matching load line from your Hyprland config.`; plain comment lines are preserved) and appends `pcall(require, "<abs>/openwhispr-binds.lua")` to `hyprland.lua` (its filter removes only lines that contain the filename *and* start with `pcall(require,`). Our source mirrors the output **byte-for-byte** (`hyprland.lua.tmpl` renders the absolute path), so the app's write is a no-op — never restore the portable module name `hypr.openwhispr-binds` (commit `4aa5015`) or trim the header; the app recognizes neither (duplicate require + header rewrite). Diagnose past changes with `git log -S openwhispr -- dot_config/hypr/`. If drift returns after an upgrade, re-derive and re-adopt:
 
 ```bash
 grep -a -o -b 'openwhispr-binds' /opt/openwhispr/resources/app.asar
