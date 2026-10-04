@@ -46,6 +46,7 @@ git diff --stat; git diff --cached --stat               # uncommitted / staged c
 - Behind + clean → safe to fast-forward (Phase 4).
 - Ahead → needs push (Phase 6), never reset without asking.
 - Dirty (uncommitted) → stash or commit first; never pull over dirt.
+- Fresh pull + no `apply` yet is the #1 cause of apparent drift (`chezmoi git -- reflog --date=iso`: a pull newer than the last apply means live is pre-apply, not reverted).
 
 ## 2. Drift Check (source vs home)
 
@@ -77,12 +78,14 @@ Name decoding: source `private_shell.json` → target `shell.json` (`private_` =
 | Omarchy rewrote a managed file, source version is intentional (e.g. deduped comments) | `apply --force` (source wins; drift will likely return — do NOT loop) |
 | Drift is in a `*.tmpl` rendered file (e.g. `monitors.lua`) | NEVER `re-add` (chezmoi refuses templates). `chezmoi edit <target>` the template, then `apply` |
 | `MM` on mise `config.toml` | mise's own write — adopt live (`re-add`); backend-explicit adds, dropped declarations, and the shortname/backend probes are README §4.5 |
-| `MM` on `.pi/agent/settings.json` / `mcp-adapter.json` | pi / pi-mcp-adapter own these — adopt live (`re-add`); README §4.6 |
+| `MM` on `.pi/agent/settings.json` / `mcp-adapter.json` | pi owns these — adopt live (`re-add`) ONLY when pi wrote real settings (model/theme/packages). If the live delta is just the `lastChangelogVersion` upgrade bump and a fresh pull hasn't been applied, `apply` (source wins) — `re-add` would revert pulled config; README §4.6 |
 | `MM` on `.omp/agent/config.yml` / `.omp/plugins/*` | omp owns these — adopt live (`re-add ~/.omp`); `node_modules`/`bun.lock` stay untracked, rebuilt by `bun install`; README §4.8 |
 | `MM` on `.config/Code/User/settings.json` | VS Code UI writes it — adopt live (`re-add`), commit `vscode:` |
 | `MM` on `hyprland.lua` / `openwhispr-binds.lua` | OpenWhispr owns these — mirrored byte-for-byte, so its rewrite is a no-op; never `re-add` a stale header; re-derive per README §4.7 |
 | `MM` on a **directory** (e.g. `.pi/agent`, `.omp/agent`), mode-only diff | dir-mode drift: target mode comes from the source dir **name** (`private_agent`), not `chmod` (ignored) and not `re-add` (skips dirs) |
 | Unsure | show the per-file `chezmoi diff`, ask user: adopt (`re-add`) or reject (`apply`) |
+
+**Ordering**: when live-only additions need adopting (`re-add`) **and** other entries need `apply`, re-add FIRST — `apply` clears the live-only delta (e.g. mise `gh = "latest"`), so a later re-add has nothing to adopt.
 
 ## 4. Pull
 
@@ -177,6 +180,8 @@ git check-ignore -q --no-index dot_pi/private_agent/private_auth.json && echo "s
 | `status` still lists entries right after piping `apply --verbose` into `head` | SIGPIPE killed chezmoi mid-apply; later entries never written | redirect apply to a log file (`> /tmp/opencode/apply.log 2>&1; echo exit:$?`), re-run, confirm exit 0 |
 | `MM` survives a full `apply --force` | one entry needs per-file pass | `apply --force --verbose <target>` again, then `status` |
 | `re-add` ignores a template drift | chezmoi refuses to overwrite templates | `chezmoi edit <target>`, hand-merge, `apply` |
+| Both a live-only addition (needs `re-add`) and source changes (need `apply`) are pending | `apply` deletes the live-only addition (e.g. mise `gh = "latest"`); a later `re-add` adopts nothing | `chezmoi re-add <file>` FIRST, then `apply --force` for the rest |
+| App-owned `MM` looks like a revert of pulled commits (e.g. pi `settings.json`) | pull landed after the last apply; live was never reverted — the app only bumped its own version (`lastChangelogVersion`) | `apply` (source wins); confirm via `chezmoi git -- reflog --date=iso` + `chezmoi state dump` (entry `contentsSHA256` == `git show <pre-pull-HEAD>:<source>`) |
 | `openwhispr-binds.lua` / `hyprland.lua` re-drift after an OpenWhispr upgrade | app's writer changed; source no longer mirrors its canonical output | re-derive the app's output (README §4.7), update template/header, `apply --force`; never `re-add` a stale header |
 | A tracked file needs `0600` but its source name is plain | target file mode comes from the source **name** on a fresh clone (plain → `0644`, `private_` → `0600`); pi's and the adapter's writers both preserve the existing mode | `git mv <dir>/<file> <dir>/private_<file>`, then `apply` (`chezmoi add` encodes the mode automatically). Probe an app's new-file mode empirically (`stat -c %a`) rather than reading its bundle |
 | `verify` exit 1 | drift remains | `status` + per-file `diff`, return to §3 |
