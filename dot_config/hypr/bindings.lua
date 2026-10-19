@@ -23,6 +23,13 @@
 -- Disable a default binding without replacing it.
 -- hl.unbind("SUPER + SHIFT + B")
 
+-- Niri-like scroll/pan: SUPER + SHIFT + scroll moves focus to the next or
+-- previous column (scrolling layout) / window (dwindle).
+-- Directions mirror the default SUPER + scroll workspace binds: down = forward.
+-- No unbind needed -- SUPER + SHIFT + scroll is unbound by default.
+o.bind("SUPER + SHIFT + mouse_down", "Scroll to next column", hl.dsp.focus({ direction = "r" }))
+o.bind("SUPER + SHIFT + mouse_up", "Scroll to previous column", hl.dsp.focus({ direction = "l" }))
+
 -- Logitech MX Keys examples:
 -- o.bind("SUPER + SHIFT + S", nil, "omarchy-capture-screenshot")
 -- o.bind("SUPER + H", nil, "voxtype record toggle")
