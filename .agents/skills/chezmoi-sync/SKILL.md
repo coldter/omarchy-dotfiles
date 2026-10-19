@@ -153,10 +153,22 @@ to the keyring `gho_…` token, scopes incl. `repo`) — no config change needed
 env -u GITHUB_TOKEN chezmoi git -- push
 ```
 
+**Multiple gh accounts**: unsetting the env var falls back to gh's **active** keyring account, which may
+not be the repo owner — the retry then 403s as a *different* login (e.g. `denied to kickssss`). Check
+`gh auth status` for the `✓ Active account: true` line. Mint the right account's token for that push
+only (no global `gh auth switch`):
+
+```bash
+TOKEN=$(env -u GITHUB_TOKEN gh auth token --user coldter)
+env -u GITHUB_TOKEN GH_TOKEN="$TOKEN" gh api user -q .login   # expect coldter
+env -u GITHUB_TOKEN GH_TOKEN="$TOKEN" chezmoi git -- push
+```
+
 Diagnose with: `git config --list --show-origin | grep -i credential` (expect
 `credential.https://github.com.helper=!/usr/bin/gh auth git-credential`) and
 `printf 'protocol=https\nhost=github.com\n\n' | env -u GITHUB_TOKEN git credential fill`
-(expect `username=coldter`, `password=gho_…`; with the env token it returns the PAT instead).
+(expect `username=coldter`, `password=gho_…`; with the env token it returns the PAT instead — with
+multiple accounts it returns whichever is active).
 
 ## 7. Validation (SLO — every run ends here)
 
@@ -185,7 +197,7 @@ git check-ignore -q --no-index dot_pi/private_agent/private_auth.json && echo "s
 | `openwhispr-binds.lua` / `hyprland.lua` re-drift after an OpenWhispr upgrade | app's writer changed; source no longer mirrors its canonical output | re-derive the app's output (README §4.7), update template/header, `apply --force`; never `re-add` a stale header |
 | A tracked file needs `0600` but its source name is plain | target file mode comes from the source **name** on a fresh clone (plain → `0644`, `private_` → `0600`); pi's and the adapter's writers both preserve the existing mode | `git mv <dir>/<file> <dir>/private_<file>`, then `apply` (`chezmoi add` encodes the mode automatically). Probe an app's new-file mode empirically (`stat -c %a`) rather than reading its bundle |
 | `verify` exit 1 | drift remains | `status` + per-file `diff`, return to §3 |
-| `git push` → `403` / `Permission to <repo> denied to <user>` | git's helper is `gh auth git-credential`, which prefers env `GITHUB_TOKEN` (fine-grained PAT, no write on this repo) over the keyring `gho_…` token that carries `repo` scope | re-run just the push with the env var unset: `env -u GITHUB_TOKEN chezmoi git -- push` — see the §6 auth note |
+| `git push` → `403` / `Permission to <repo> denied to <user>` | git's helper is `gh auth git-credential`, which prefers env `GITHUB_TOKEN` (fine-grained PAT, no write on this repo) over the keyring `gho_…` token that carries `repo` scope | re-run just the push with the env var unset: `env -u GITHUB_TOKEN chezmoi git -- push`. If it 403s as a *different* login, multiple gh accounts exist and the wrong one is active — push with the owner's token: `TOKEN=$(env -u GITHUB_TOKEN gh auth token --user coldter); env -u GITHUB_TOKEN GH_TOKEN="$TOKEN" chezmoi git -- push` — see the §6 auth note |
 | Credential store would be staged (`chezmoi add ~/.pi/agent/auth.json` + `git add -A`) | root `.gitignore` mirrors README §7; if it still stages, the pattern is missing | `git check-ignore -v <source-file>`, add the pattern; if a secret was already pushed, rotate it first, then rewrite history — deleting the file is not enough |
 | `pull --ff-only` refuses | diverged (local commits + upstream) | resolve per §4 conflict flow, or push first if ahead-only |
 | Template parse error on apply | `else if` placed after `else` | move new machine block above `{{ else }}` fallback |
