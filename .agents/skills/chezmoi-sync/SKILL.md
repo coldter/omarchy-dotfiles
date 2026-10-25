@@ -135,13 +135,15 @@ Notes:
 ```bash
 chezmoi status                         # confirm which files were adopted
 chezmoi re-add                         # bulk adopt (skips *.tmpl — see §3)
-chezmoi git -- status -sb              # new commit(s) should exist
+chezmoi git -- status -sb              # re-add only dirties the worktree (no autoCommit)
+chezmoi git -- add -A && chezmoi git -- commit -m "<prefix>: <what changed>"
 chezmoi git -- log -1 --oneline
 chezmoi git -- push
 git rev-list --left-right --count HEAD...@{u}          # expect 0 0
 ```
 
-If nothing was re-added, there is nothing to commit — do NOT create empty commits. `git status -sb` staying `## master...origin/master` with no push needed is the normal `apply`-only outcome.
+`autoCommit` is NOT set in `chezmoi.toml`, so `re-add`/`edit` never commit — always commit explicitly.
+If the worktree is still clean after `re-add`, nothing was adopted: do NOT create empty commits. `git status -sb` staying `## master...origin/master` with no push needed is the normal `apply`-only outcome.
 
 **Push 403 (`Permission to <repo> denied to <you>`)** → git's helper is `gh auth git-credential`
 (`~/.config/git/config`), and gh resolves the token as env `GH_TOKEN`/`GITHUB_TOKEN` **first**, ahead of
