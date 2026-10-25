@@ -1,6 +1,6 @@
 [tools]
 antigravity-cli = "latest"
-bun = "1.4.2"
+bun = "1.4.4"
 chezmoi = "latest"
 codex = "latest"
 node = "latest"
