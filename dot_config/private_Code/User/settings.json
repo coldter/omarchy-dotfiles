@@ -495,7 +495,7 @@
   },
   "claudeCode.preferredLocation": "panel",
   "workbench.productIconTheme": "fluent-icons",
-  "workbench.colorTheme": "Pierre Dark",
+  "workbench.colorTheme": "Matte Black",
   "json.schemaDownload.trustedDomains": {
     "https://biomejs.dev": true,
     "https://developer.microsoft.com/json-schemas/": true,
