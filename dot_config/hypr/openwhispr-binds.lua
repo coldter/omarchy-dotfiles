@@ -4,4 +4,7 @@
 -- errors, so after editing this file validate with `hyprctl configerrors`.
 
 
+
+
+
 hl.bind("SUPER + F1", hl.dsp.exec_cmd("dbus-send --session --type=method_call --dest=com.openwhispr.App /com/openwhispr/App com.openwhispr.App.Toggle"))
