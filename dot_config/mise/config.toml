@@ -1,9 +1,6 @@
 [tools]
-antigravity-cli = "latest"
 bun = "1.4.4"
 chezmoi = "latest"
-codex = "latest"
-node = "latest"
 # OpenCode: stable (`opencode`) + beta (`opencode2`) side by side.
 # Stable is listed first so it wins `opencode` on PATH; beta is invoked
 # explicitly via the opencode-beta/ocb shell aliases in [shell_alias] below.
@@ -13,10 +10,6 @@ node = "latest"
 ]
 pnpm = "latest"
 usage = "latest"
-pi = "latest"
-"github:can1357/oh-my-pi" = "latest"
-copilot = "latest"
-gh = "latest"
 
 [settings.upgrade]
 auto_prune = true
