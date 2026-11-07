@@ -2,6 +2,6 @@
   "name": "omp-plugins",
   "private": true,
   "dependencies": {
-    "pi-token-speed": "npm:pi-token-speed@0.9.0"
+    "pi-token-speed": "^0.12.0"
   }
 }

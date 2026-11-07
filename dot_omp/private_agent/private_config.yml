@@ -1,7 +1,7 @@
 modelRoles:
   slow: commandcode/deepseek/deepseek-v4.1-flash
   default: commandcode/deepseek/deepseek-v4.1-flash-fast:max
-setupVersion: 2
+setupVersion: 3
 symbolPreset: nerd
 statusLine:
   preset: custom
@@ -19,3 +19,5 @@ statusLine:
     - cache_hit
     - cost
     - context_pct
+update:
+  auto: false
