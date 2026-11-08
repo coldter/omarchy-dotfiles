@@ -139,7 +139,7 @@ chezmoi re-add ~/.pi/agent/settings.json     # or just: chezmoi re-add
 
 ### 4.7 OpenWhispr-owned Hyprland files — mirror, never patch
 
-OpenWhispr rewrites them on every hotkey registration: `openwhispr-binds.lua` (its `MANAGED_HEADER_TEXT` is exactly `OpenWhispr keybinds (managed automatically)` + `If you delete this file, also remove the matching load line from your Hyprland config.`; plain comment lines are preserved) and appends `pcall(require, "<abs>/openwhispr-binds.lua")` to `hyprland.lua` (its filter removes only lines that contain the filename *and* start with `pcall(require,`). Our source mirrors the output **byte-for-byte** (`hyprland.lua.tmpl` renders the absolute path), so the app's write is a no-op — never restore the portable module name `hypr.openwhispr-binds` (commit `4aa5015`) or trim the header; the app recognizes neither (duplicate require + header rewrite). Diagnose past changes with `git log -S openwhispr -- dot_config/hypr/`. If drift returns after an upgrade, re-derive and re-adopt:
+OpenWhispr rewrites them on every hotkey registration: `openwhispr-binds.lua` (its `MANAGED_HEADER_TEXT` is exactly `OpenWhispr keybinds (managed automatically)` + `If you delete this file, also remove the matching load line from your Hyprland config.`; plain comment lines are preserved) and appends `pcall(require, "<abs>/openwhispr-binds.lua")` to `hyprland.lua` (its filter removes only lines that contain the filename *and* start with `pcall(require,`). Our source mirrors the header and load line (`hyprland.lua.tmpl` renders the absolute path); its binds writer appends one blank line per rewrite, so blank-line drift is expected — adopt live (`chezmoi re-add`). Never restore the portable module name `hypr.openwhispr-binds` (commit `4aa5015`) or trim the header; the app recognizes neither (duplicate require + header rewrite). Diagnose past changes with `git log -S openwhispr -- dot_config/hypr/`. If drift returns after an upgrade, re-derive and re-adopt:
 
 ```bash
 grep -a -o -b 'openwhispr-binds' /opt/openwhispr/resources/app.asar
@@ -215,8 +215,8 @@ Vendored skill: `.agents/skills/chezmoi-workflows/SKILL.md` (+ `chezmoi-sync`; b
 | `git push` fails | No remote → §3.1; 403 → `env -u GITHUB_TOKEN chezmoi git -- push` |
 | Untrack a file | `chezmoi forget <path>` (live file stays) |
 | pi settings drift = only `lastChangelogVersion` | Expected after an upgrade — `re-add` (§4.6) |
-| `openwhispr-binds.lua` / `hyprland.lua` drift after OpenWhispr starts | Its writer changed — re-derive + re-adopt (§4.7) |
-| `MM` on `.pi/agent` / `.omp/agent`, mode diff only | `chmod` on source dirs is ignored and `re-add` skips dirs — carry `private_agent` in the name (0700) |
+| `openwhispr-binds.lua` / `hyprland.lua` drift after OpenWhispr starts | Blank-line-only is expected — `re-add` + commit; header/load-line change → re-derive + re-adopt (§4.7) |
+| `MM` on `.pi/agent` / `.omp/agent`, mode diff only | `chmod` on source dirs is ignored and `re-add` ignores non-file entries — carry `private_agent` in the name (0700) |
 | `~/.omp/agent/config.yml` or `~/.omp/plugins/*` drift | omp writes its own config — `chezmoi re-add ~/.omp` (§4.8) |
 | omp plugins missing after restore | `bun install` in `~/.omp/plugins` (§3) |
 | pi `i-have-adhd` skill dangles | Its target `~/.agents/skills/i-have-adhd` is tracked — `chezmoi status`/`apply` |
