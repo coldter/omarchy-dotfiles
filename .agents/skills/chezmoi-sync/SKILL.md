@@ -77,7 +77,7 @@ Name decoding: source `private_shell.json` → target `shell.json` (`private_` =
 | Omarchy rewrote a managed file, source version is intentional (e.g. deduped comments) | `apply --force` (source wins; drift will likely return — do NOT loop) |
 | Drift is in a `*.tmpl` rendered file (e.g. `monitors.lua`) | NEVER `re-add` (chezmoi refuses templates). `chezmoi edit <target>` the template, then `apply` |
 | `MM` on mise `config.toml` | mise's own write — adopt live (`re-add`); backend-explicit adds, dropped declarations, and the shortname/backend probes are README §4.5 |
-| `MM` on `.pi/agent/settings.json` / `mcp-adapter.json` | pi owns these — adopt live (`re-add`) ONLY when pi wrote real settings (model/theme/packages). If the live delta is just the `lastChangelogVersion` upgrade bump and a fresh pull hasn't been applied, `apply` (source wins) — `re-add` would revert pulled config; README §4.6 |
+| `MM` on `.pi/agent/settings.json` / `mcp-adapter.json` | pi owns these — adopt live (`re-add`) when pi wrote real settings; a lone `lastChangelogVersion` bump after a fresh pull → `apply` (source wins); README §4.6 |
 | `MM` on `.omp/agent/config.yml` / `.omp/plugins/*` | omp owns these — adopt live (`re-add ~/.omp`); `node_modules`/`bun.lock` stay untracked, rebuilt by `bun install`; README §4.8 |
 | `MM` on `.config/Code/User/settings.json` | VS Code UI writes it — adopt live (`re-add`), commit `vscode:` |
 | `MM` on `hyprland.lua` / `openwhispr-binds.lua` | OpenWhispr's binds writer adds one blank line per rewrite — adopt live (`re-add`), commit `hypr:`. Header/load-line change → re-derive from the app (README §4.7); never `re-add` a stale header |
@@ -125,11 +125,11 @@ chezmoi apply --force --verbose ~/.config/path/file    # per-file retry if one e
 
 Notes:
 
-- Plain `apply` — and even `--dry-run` — aborts with `could not open a new TTY` when a file `has changed since chezmoi last wrote it`: the guard fires before preview too. Add `--force` to the dry-run, review the diff, then `apply --force`.
-- Never run `chezmoi apply --verbose | head -n N`: when `head` exits, chezmoi dies from SIGPIPE partway through and later entries are silently skipped (they linger as ` M`/`MM`/` A` in `status`). Redirect to a log file, check the real `exit:$?`, and read the log with `head`/`tail`. Same applies to the `--dry-run` (truncated review).
-- `apply` may need two passes: re-run `status` after the first pass; a leftover `MM` (seen with `shell.json`) clears on per-file `--force` retry.
-- Templates: verify rendering with `chezmoi cat <target>`; new `monitors.lua.tmpl` blocks go ABOVE the `{{ else }}` fallback or the template fails to parse.
-- After Hyprland files: `hyprctl configerrors` must print nothing.
+- Plain `apply`/`--dry-run` aborts with `could not open a new TTY` when a target changed since the last write. Add `--force` to the dry-run, review, then `apply --force`.
+- Never pipe `apply --verbose` into `head` — SIGPIPE kills chezmoi mid-run. Redirect to a `mktemp` log, check `exit:$?`, then read it. Same for `--dry-run`.
+- A leftover `MM` may need a per-file `apply --force` pass.
+- Templates: `chezmoi cat <target>` to verify; `monitors.lua.tmpl` blocks go above `{{ else }}`.
+- Hyprland: `hyprctl configerrors` must print nothing.
 
 ## 6. Push Path (only when source changed via `re-add`/`edit`)
 
@@ -146,34 +146,22 @@ git rev-list --left-right --count HEAD...@{u}          # expect 0 0
 `autoCommit` is NOT set in `chezmoi.toml`, so `re-add`/`edit` never commit — always commit explicitly.
 If the worktree is still clean after `re-add`, nothing was adopted: do NOT create empty commits. `git status -sb` staying `## master...origin/master` with no push needed is the normal `apply`-only outcome.
 
-**Push 403 (`Permission to <repo> denied to <you>`)** → git's helper is `gh auth git-credential`
-(`~/.config/git/config`), and gh resolves the token as env `GH_TOKEN`/`GITHUB_TOKEN` **first**, ahead of
-its keyring OAuth token. When the env var holds a fine-grained PAT (`github_pat_…`) scoped to other
-repos, the identity matches but the write is denied. Re-run the push with the env var unset: gh then
-uses its **active keyring account** (if that is the owner, this is enough; otherwise see below) — no
-config change needed:
+**Push 403 (`Permission to <repo> denied to <you>`)** → git uses `gh auth git-credential`, and gh
+prefers env `GH_TOKEN`/`GITHUB_TOKEN` over the keyring. A fine-grained PAT without write scope 403s.
+Unset it first:
 
 ```bash
 env -u GITHUB_TOKEN chezmoi git -- push
 ```
 
-**Multiple gh accounts**: unsetting the env var falls back to gh's **active** keyring account, which may
-not be the repo owner — the retry then 403s as a *different* login (e.g. `denied to kickssss`). Check
-`gh auth status` for the `✓ Active account: true` line. Mint the right account's token for that push
-only (no global `gh auth switch`):
+If the active keyring account is not the repo owner (check `gh auth status`), mint the owner's token
+for this push only:
 
 ```bash
-TOKEN=$(env -u GITHUB_TOKEN gh auth token --user coldter)      # never echo $TOKEN
-env -u GITHUB_TOKEN GH_TOKEN="$TOKEN" gh api user -q .login   # expect coldter
+TOKEN=$(env -u GITHUB_TOKEN gh auth token --user coldter)   # never echo $TOKEN
 env -u GITHUB_TOKEN GH_TOKEN="$TOKEN" chezmoi git -- push
 unset TOKEN
 ```
-
-Diagnose with: `git config --list --show-origin | grep -i credential` (expect
-`credential.https://github.com.helper=!/usr/bin/gh auth git-credential`) and
-`printf 'protocol=https\nhost=github.com\n\n' | env -u GITHUB_TOKEN git credential fill | awk -F= '/^username=/{print} /^password=/{print "password=" substr($2,1,4) "…"}'`
-(expect the active account's `username=` and only the `gho_…` prefix — never print the full password;
-with the env token it returns the PAT instead).
 
 ## 7. Validation (SLO — every run ends here)
 
@@ -194,23 +182,13 @@ git check-ignore -q --no-index dot_pi/private_agent/private_auth.json &&
 
 | Symptom | Cause | Fix |
 | ------- | ----- | --- |
-| `could not open a new TTY` on apply/dry-run | target changed since last write; headless guard | `--dry-run --force` to preview → `apply --force` (whole tree or per-file) |
-| `status` still lists entries right after piping `apply --verbose` into `head` | SIGPIPE killed chezmoi mid-apply; later entries never written | redirect apply to a `mktemp` log (`LOG=$(mktemp); chezmoi apply --force --verbose > "$LOG" 2>&1; echo exit:$?`), re-run, confirm exit 0 |
-| `MM` survives a full `apply --force` | one entry needs per-file pass | `apply --force --verbose <target>` again, then `status` |
-| `re-add` ignores a template drift | chezmoi refuses to overwrite templates | `chezmoi edit <target>`, hand-merge, `apply` |
-| Both a live-only addition (needs `re-add`) and source changes (need `apply`) are pending | `apply` deletes the live-only addition (e.g. mise `gh = "latest"`); a later `re-add` adopts nothing | `chezmoi re-add <file>` FIRST, then `apply --force` for the rest |
-| App-owned `MM` looks like a revert of pulled commits (e.g. pi `settings.json`) | pull landed after the last apply; live was never reverted — the app only bumped its own version (`lastChangelogVersion`) | `apply` (source wins); confirm via `chezmoi git -- reflog --date=iso` + `chezmoi state dump` (entry `contentsSHA256` == `git show <pre-pull-HEAD>:<source>`) |
-| `openwhispr-binds.lua` / `hyprland.lua` re-drift | binds writer adds one blank line per rewrite; header/load-line change means the app writer changed | blank-line-only → `re-add` + commit `hypr:`; otherwise re-derive (README §4.7), `apply --force`; never `re-add` a stale header |
-| A tracked file needs `0600` but its source name is plain | target file mode comes from the source **name** on a fresh clone (plain → `0644`, `private_` → `0600`); pi's and the adapter's writers both preserve the existing mode | `git mv <dir>/<file> <dir>/private_<file>`, then `apply` (`chezmoi add` encodes the mode automatically). Probe an app's new-file mode empirically (`stat -c %a`) rather than reading its bundle |
-| `verify` exit 1 | drift remains | `status` + per-file `diff`, return to §3 |
-| `git push` → `403` / `Permission to <repo> denied to <user>` | git's helper is `gh auth git-credential`, which prefers env `GITHUB_TOKEN` (fine-grained PAT, no write on this repo) over the keyring `gho_…` token that carries `repo` scope | re-run just the push with the env var unset: `env -u GITHUB_TOKEN chezmoi git -- push`. If it 403s as a *different* login, multiple gh accounts exist and the wrong one is active — push with the owner's token: `TOKEN=$(env -u GITHUB_TOKEN gh auth token --user coldter); env -u GITHUB_TOKEN GH_TOKEN="$TOKEN" chezmoi git -- push; unset TOKEN` — never echo the token; see the §6 auth note |
-| Credential store would be staged (`chezmoi add ~/.pi/agent/auth.json` + `git add -A`) | root `.gitignore` mirrors README §7; if it still stages, the pattern is missing | `git check-ignore -v <source-file>`, add the pattern; if a secret was already pushed, rotate it first, then rewrite history — deleting the file is not enough |
-| `pull --ff-only` refuses | diverged (local commits + upstream) | resolve per §4 conflict flow, or push first if ahead-only |
-| Template parse error on apply | `else if` placed after `else` | move new machine block above `{{ else }}` fallback |
+| App-owned `MM` looks like a revert of pulled commits (e.g. pi `settings.json`) | pull landed after the last apply; the app only bumped `lastChangelogVersion` | `apply` (source wins); confirm via `chezmoi git -- reflog --date=iso` + `chezmoi state dump` (`contentsSHA256`) |
+| `openwhispr-binds.lua` / `hyprland.lua` re-drift | binds writer adds one blank line per rewrite; header/load-line change means the app writer changed | blank-line-only → `re-add` + commit `hypr:`; otherwise re-derive (README §4.7), `apply --force` |
+| A tracked file needs `0600` but its source name is plain | mode comes from the source name (`private_` → 0600); app writers preserve the existing mode | `git mv <dir>/<file> <dir>/private_<file>`, then `apply` |
+| Credential store would be staged | `.gitignore` pattern missing | `git check-ignore -v <source-file>`, add the pattern; rotate first if already pushed |
 
 ## Post-Execution Reflection
 
-1. Did every phase succeed to §7 SLO? If not, fix the section above.
-2. Did a flag or output change? Update the command block.
-3. Was a workaround needed? Fold it into the skill so the next run doesn't improvise.
-4. Did you edit this skill (it is tracked and chezmoi-ignored)? Commit it too (`agents:` prefix) — an uncommitted skill edit breaks the §7 clean-tree SLO.
+1. Fix any phase that failed §7.
+2. Update commands/flags that drifted.
+3. Fold in real workarounds; commit skill edits (`agents:`) — it is tracked and chezmoi-ignored.
