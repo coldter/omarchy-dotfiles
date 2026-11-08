@@ -34,14 +34,15 @@ Besides you, only `omarchy update` (migrations, leaves `*.bak.*`) and `omarchy r
     ├── omarchy/ # private_shell.json (0600), themes/, hooks/post-update.d/,
     │            # extensions/ (menu.sh, omarchy-menu.jsonc), branding/
     ├── alacritty/ foot/ kitty/ ghostty/ · git/ tmux/ btop/ · starship.toml
-    └── mise/config.toml       # tool list — pins bun 1.4.2, rest `latest`
+    ├── private_Code/ (VS Code) · zed/
+    └── mise/config.toml       # tool list — pins bun, rest `latest`
 ```
 
 Source-name decoder: `dot_x` → `~/.x`; `private_` → 0600 (dirs 0700, e.g. `private_agent/`); `executable_` → +x; `*.tmpl` → Go template, rendered on apply; `run_once_after_*` → once per content hash; `symlink_x` → symlink to the path stored in the file.
 
 **Deliberately untracked** (secret/regenerable — §7):
-- pi: `auth.json` (API key — `/login` again), `sessions/`, `npm/`, `models-store.json`, `commandcode-models.json`, `trust.json`.
-- omp: `agent/agent.db` (**holds provider credentials** — log in again), `agent/{history,models,skill-descriptions}.db`, `agent/{cache,sessions,terminal-sessions}/`, `agent/last-changelog-version`, `plugins/{node_modules,bun.lock}`, `logs/`, `natives/`, `run/`, `cache/`. omp's lazy `agent/{rules,agents,managed-skills}/`: `chezmoi add` once you put files there.
+- pi: `auth.json` (API key — `/login` again), `sessions/`, `npm/`, `missions/`, `pi-subagents/`, `pi-web-access/`, `run-history.jsonl`, `mcp-{last-seen-version,onboarding}.json`, `models-store.json`, `commandcode-models.json`, `trust.json`.
+- omp: `agent/agent.db` (**holds provider credentials** — log in again), `agent/{history,models,skill-descriptions}.db`, `agent/{blobs,cache,predict,sessions,terminal-sessions}/`, `agent/last-changelog-version`, `plugins/{node_modules,bun.lock}`, `logs/`, `natives/`, `run/`, `cache/`, `stats.db`, `puppeteer/`. omp's lazy `agent/{rules,agents,managed-skills}/`: `chezmoi add` once you put files there.
 - per-machine `~/.config/chezmoi/chezmoi.toml` (§5).
 
 ## 3. New machine bootstrap
@@ -58,7 +59,7 @@ chezmoi init --apply coldter/omarchy-dotfiles
 # 4. If run outside a session: omarchy theme set matte-black   # then log out/in
 ```
 
-The mise config pins `bun` = 1.4.2, everything else `latest` (incl. `chezmoi`) — to pin the chezmoi you just installed: `mise use -g chezmoi@<version>` then `chezmoi add ~/.config/mise/config.toml` + commit.
+The mise config pins `bun`, everything else `latest` (incl. `chezmoi`) — to pin the chezmoi you just installed: `mise use -g chezmoi@<version>` then `chezmoi add ~/.config/mise/config.toml` + commit.
 
 Not covered: `chezmoi.toml` (generated from the prompts), SSH keys, browser profiles, secrets (§7). Agents: pi — run `/login` (its npm packages rebuild from the tracked `settings.json`); omp — log in (credentials live only in the untracked `agent.db`), then `bun install` in `~/.omp/plugins` to restore the tracked plugin manifest.
 
@@ -149,7 +150,7 @@ dd if=/opt/openwhispr/resources/app.asar bs=1 skip=<offset> count=30000
 
 ### 4.8 omp config
 
-omp (oh-my-pi) writes its own files: `~/.omp/agent/config.yml` (`modelRoles`, `symbolPreset`, `setupVersion`) and `~/.omp/plugins/{package.json,omp-plugins.lock.json}` (declared plugin set + enabled state; omp pins ranges to the installed version, e.g. `^0.10.1` → `0.9.0`):
+omp (oh-my-pi) writes its own files: `~/.omp/agent/config.yml` (`modelRoles`, `symbolPreset`, `setupVersion`) and `~/.omp/plugins/{package.json,omp-plugins.lock.json}` (declared plugin set + enabled state; omp pins ranges to the installed version):
 
 ```bash
 chezmoi re-add ~/.omp       # config.yml + manifests; DBs/node_modules/bun.lock stay untracked
@@ -187,19 +188,19 @@ To survive reinstall: `omarchy theme set <name>` + `chezmoi edit-config` → `[d
 Tracking is opt-in (`chezmoi add`) — a stray `git add -A` in `~/.config` can't leak — still:
 - **Never track:** `~/.config/gh/` (OAuth token), `~/.ssh/`, `~/.local/share/opencode/` (auth), `~/.pi/agent/auth.json`, `~/.omp/agent/agent.db` (credentials), `~/.config/environment.d` secrets, `*.local`, anything token-shaped.
 - **Not worth tracking:** the generated state listed in §2 (agent DBs, sessions/caches, `node_modules`, `last-changelog-version`, npm rebuilds, model catalogs).
-- Audit: `grep -rEi 'token|secret|api[_-]?key|password' "$(chezmoi source-path)" --exclude-dir=.git --exclude-dir=.agents`
-- Guard: the root `.gitignore` mirrors this list, so an accidental `chezmoi add <secret>` + `git add -A` cannot stage it (verify: `git check-ignore -v dot_pi/private_agent/private_auth.json`; `.chezmoiignore` keeps that file out of `$HOME`).
+- Audit (filenames only): `grep -rEil 'token|secret|api[_-]?key|password' "$(chezmoi source-path)" --exclude-dir=.git --exclude-dir=.agents --exclude=README.md --exclude=.gitignore`
+- Guard: the root `.gitignore` mirrors this list, so an accidental `chezmoi add <secret>` + `git add -A` cannot stage it (verify: `git check-ignore -v dot_pi/private_agent/private_auth.json`).
 - Secrets-adjacent files: edit in place, never `chezmoi add`.
 
 ## 8. For AI agents
 
-Vendored skill: `.agents/skills/chezmoi-workflows/SKILL.md` (+ `chezmoi-sync`; both source-only via `.chezmoiignore`, hashes in `skills-lock.json`) — follow its status → diff → re-add/apply → verify flow; never blind-apply. Every vendored skill must be listed in `.chezmoiignore` (only `i-have-adhd` is tracked, as pi's symlink target).
+Project skills: `.agents/skills/chezmoi-workflows/SKILL.md` (vendored; hash in `skills-lock.json`) and repo-specific `chezmoi-sync` — both source-only via `.chezmoiignore`. Follow their status → diff → re-add/apply → verify flow; never blind-apply. Every source-only skill must be listed in `.chezmoiignore` (only `i-have-adhd` is applied into `$HOME`, as pi's symlink target).
 
-1. Read the vendored skill first; adopt live files with `chezmoi re-add` (or `chezmoi edit <target>`); never edit `*.tmpl` renders.
+1. Read the project skills first; adopt live files with `chezmoi re-add` (or `chezmoi edit <target>`); never edit `*.tmpl` renders.
 2. Per-machine conditionals: `[data] machine` only, never hostname.
 3. After Omarchy update/refresh: `chezmoi diff`, report, adopt/reject per user's call; new tracked files only with user confirmation (zones 3/4).
 4. Hyprland changes: `hyprctl reload && hyprctl configerrors` empty.
-5. Commit prefixes: `pkg: mise: monitors: hypr: omarchy: docs: agents: pi: omp:`; the drift hook must exit 0 and never apply.
+5. Commit prefixes: `pkg: mise: pi: omp: vscode: monitors: hypr: omarchy: docs: agents:`; the drift hook must exit 0 and never apply.
 6. pi (`~/.pi/agent/`) and omp (`~/.omp/agent/`, `~/.omp/plugins/`) configs are tracked; credential stores, sessions, caches, catalogs stay untracked (§2, §7).
 
 ## 9. Troubleshooting
@@ -212,7 +213,7 @@ Vendored skill: `.agents/skills/chezmoi-workflows/SKILL.md` (+ `chezmoi-sync`; b
 | No drift notification after an update | `omarchy hook post-update`; check `~/.local/state/chezmoi-drift/` |
 | Missing package / tool on a new machine | `packages/*.txt` + `run_once_after_10-packages.sh`; `mise install` |
 | Preview a template | `chezmoi cat <target>` |
-| `git push` fails | No remote → §3.1; 403 → `env -u GITHUB_TOKEN chezmoi git -- push` |
+| `git push` fails | No remote → §3.1; 403 → `env -u GITHUB_TOKEN chezmoi git -- push`, then owner token (chezmoi-sync §6) |
 | Untrack a file | `chezmoi forget <path>` (live file stays) |
 | pi settings drift = only `lastChangelogVersion` | Expected after an upgrade — `re-add` (§4.6) |
 | `openwhispr-binds.lua` / `hyprland.lua` drift after OpenWhispr starts | Blank-line-only is expected — `re-add` + commit; header/load-line change → re-derive + re-adopt (§4.7) |

@@ -4,10 +4,10 @@ packages
 skills-lock.json
 .gitignore
 
-# Vendored project skills for this repo (installed via skills.sh / npx skills add).
+# Project skills for this repo (chezmoi-workflows is vendored; chezmoi-sync is local).
 # Source-only: agents load them as *project* skills while this repo is the cwd —
-# they must never be applied into ~/.agents. List every vendored skill here.
-# (`.agents` itself is NOT ignored: dot_agents/skills/i-have-adhd is tracked,
+# they must never be applied into ~/.agents. List every project skill here.
+# (`.agents` itself is NOT ignored: dot_agents/skills/i-have-adhd is applied,
 #  because ~/.pi/agent/skills/i-have-adhd symlinks to it.)
 .agents/skills/chezmoi-workflows
 .agents/skills/chezmoi-sync

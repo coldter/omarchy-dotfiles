@@ -1,12 +1,11 @@
-# Secret guard — enforces README §7 "Never track" in a public repo.
+# Guard — enforces README §7 "Never track" + §2 untracked state in a public repo.
 # Protects against an accidental `chezmoi add <secret>` followed by `git add -A`.
 # Verify: git check-ignore -v dot_pi/private_agent/private_auth.json
 
 # pi / omp credential stores
 dot_pi/private_agent/private_auth.json
 dot_pi/private_agent/private_mcp-auth.json
-dot_omp/private_agent/agent.db
-dot_omp/private_agent/private_agent.db
+dot_omp/private_agent/*.db*
 
 # gh CLI OAuth token (~/.config/gh/hosts.yml)
 dot_config/gh/
@@ -14,7 +13,38 @@ dot_config/private_gh/
 
 # other locations README §7 lists as never-track
 dot_config/environment.d/
+dot_config/private_environment.d/
 dot_local/share/opencode/
+dot_local/share/private_opencode/
+dot_ssh/
+private_dot_ssh/
+
+# agent state listed as untracked in README §2
+dot_pi/private_agent/sessions/
+dot_pi/private_agent/npm/
+dot_pi/private_agent/missions/
+dot_pi/private_agent/pi-subagents/
+dot_pi/private_agent/pi-web-access/
+dot_pi/private_agent/*run-history.jsonl
+dot_pi/private_agent/*mcp-last-seen-version.json
+dot_pi/private_agent/*mcp-onboarding.json
+dot_pi/private_agent/*models-store.json
+dot_pi/private_agent/*commandcode-models.json
+dot_pi/private_agent/*trust.json
+dot_omp/*.db*
+dot_omp/cache/
+dot_omp/logs/
+dot_omp/natives/
+dot_omp/puppeteer/
+dot_omp/*run/
+dot_omp/private_agent/blobs/
+dot_omp/private_agent/cache/
+dot_omp/private_agent/predict/
+dot_omp/private_agent/sessions/
+dot_omp/private_agent/terminal-sessions/
+dot_omp/private_agent/*last-changelog-version
+dot_omp/plugins/node_modules/
+dot_omp/plugins/*bun.lock
 
 # generic secret shapes (chezmoi source names carry private_ attributes)
 **/auth.json
