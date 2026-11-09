@@ -80,6 +80,7 @@ Name decoding: source `private_shell.json` → target `shell.json` (`private_` =
 | `MM` on `.pi/agent/settings.json` / `mcp-adapter.json` | pi owns these — adopt live (`re-add`) when pi wrote real settings; a lone `lastChangelogVersion` bump after a fresh pull → `apply` (source wins); README §4.6 |
 | `MM` on `.omp/agent/config.yml` / `.omp/plugins/*` | omp owns these — adopt live (`re-add ~/.omp`); `node_modules`/`bun.lock` stay untracked, rebuilt by `bun install`; README §4.8 |
 | `MM` on `.config/Code/User/settings.json` | VS Code UI writes it — adopt live (`re-add`), commit `vscode:` |
+| `MM` on `.config/herdr-app/settings.json` | herdr writes it — adopt live (`re-add`), commit `herdr:` |
 | `MM` on `hyprland.lua` / `openwhispr-binds.lua` | OpenWhispr's binds writer adds one blank line per rewrite — adopt live (`re-add`), commit `hypr:`. Header/load-line change → re-derive from the app (README §4.7); never `re-add` a stale header |
 | `MM` on a **directory** (e.g. `.pi/agent`, `.omp/agent`), mode-only diff | dir mode comes from the source dir **name** (`private_agent`); `chmod` is ignored and `re-add` ignores non-file entries — rename the source dir |
 | Unsure | show the per-file `chezmoi diff`, ask user: adopt (`re-add`) or reject (`apply`) |
@@ -108,7 +109,7 @@ chezmoi git -- push
 # or abandon: chezmoi git -- merge --abort
 ```
 
-Commit prefix convention: lowercase (`pkg:`, `mise:`, `pi:`, `omp:`, `vscode:`, `monitors:`, `hypr:`, `omarchy:`, `docs:`, `agents:`).
+Commit prefix convention: lowercase (`pkg:`, `mise:`, `pi:`, `omp:`, `vscode:`, `herdr:`, `monitors:`, `hypr:`, `omarchy:`, `docs:`, `agents:`).
 
 ## 5. Apply
 
