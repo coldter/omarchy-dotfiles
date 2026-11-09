@@ -24,17 +24,19 @@ Besides you, only `omarchy update` (migrations, leaves `*.bak.*`) and `omarchy r
 ├── .agents/skills/{chezmoi-workflows,chezmoi-sync}/   # vendored skills, source-only (§8)
 ├── packages/{manual,aur}-packages.txt                 # package lists (run_once_after_10)
 ├── run_once_after_{10-packages.sh,20-theme.sh.tmpl,30-mise.sh}
-├── dot_bashrc · dot_agents/skills/i-have-adhd/        # i-have-adhd = pi's symlink target
+├── dot_bashrc · dot_bash_profile · dot_profile · dot_agents/skills/i-have-adhd/
 ├── dot_pi/private_agent/                              # → ~/.pi/agent/ 0700 — pi (§4.6)
 ├── dot_omp/private_agent/private_config.yml           # → ~/.omp/agent/config.yml 0600 (§4.8)
 ├── dot_omp/plugins/                                   # → ~/.omp/plugins/ manifests (§4.8)
+├── private_dot_dsh/profiles/web/                      # → ~/.dsh/profiles/web 0700
 └── dot_config/
     ├── hypr/    # hyprland.lua.tmpl + monitors.lua.tmpl (per-machine), bindings/input/
     │            # looknfeel/autostart, openwhispr-binds.lua §4.7
     ├── omarchy/ # private_shell.json (0600), themes/, hooks/post-update.d/,
     │            # extensions/ (menu.sh, omarchy-menu.jsonc), branding/
     ├── alacritty/ foot/ kitty/ ghostty/ · git/ tmux/ btop/ · starship.toml
-    ├── private_Code/ (VS Code) · zed/
+    ├── private_Code/ (VS Code) · zed/ · herdr-app/ · herdr/ · opencode/
+    ├── fontconfig/fonts.conf
     └── mise/config.toml       # tool list — pins bun, rest `latest`
 ```
 
@@ -197,7 +199,7 @@ Project skills: `.agents/skills/chezmoi-workflows/SKILL.md` (vendored; `skills-l
 1. Read the project skills first; adopt live files with `chezmoi re-add` (or `chezmoi edit <target>`); never edit `*.tmpl` renders.
 2. Machine conditionals: `[data] machine` only, never hostname.
 3. After Omarchy update/refresh: `chezmoi diff`, report, adopt/reject per user; new tracked files only with confirmation (zones 3/4).
-4. Hyprland: `hyprctl reload && hyprctl configerrors` empty. Commit prefixes: `pkg: mise: pi: omp: vscode: monitors: hypr: omarchy: docs: agents:`; the drift hook exits 0 and never applies.
+4. Hyprland: `hyprctl reload && hyprctl configerrors` empty. Commit prefixes: `pkg: mise: pi: omp: vscode: herdr: monitors: hypr: omarchy: docs: agents:`; the drift hook exits 0 and never applies.
 5. pi/omp configs are tracked; credential stores, sessions, caches, catalogs stay untracked (§2, §7).
 
 ## 9. Troubleshooting
