@@ -1,0 +1,10 @@
+#
+# ~/.bash_profile
+#
+
+[[ -f ~/.bashrc ]] && . ~/.bashrc
+
+
+# Added by Toolbox App
+export PATH="$PATH:/home/kuldeep/.local/share/JetBrains/Toolbox/scripts"
+

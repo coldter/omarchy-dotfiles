@@ -57,3 +57,16 @@ dot_omp/plugins/*bun.lock
 **/*.local
 .env
 .env.*
+
+# herdr / opencode / dsh / omp state and credentials
+dot_config/opencode/*service.json
+dot_config/opencode/node_modules/
+dot_config/opencode/*package.json
+dot_config/opencode/*package-lock.json
+dot_config/opencode/*bun.lock
+private_dot_dsh/**/*credentials*
+private_dot_dsh/sessions/
+private_dot_dsh/storages/
+private_dot_dsh/attachments/
+private_dot_dsh/**/node_modules/
+dot_omp/**/*.db*

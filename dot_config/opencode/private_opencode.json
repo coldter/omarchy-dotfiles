@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "provider": {
+    "opencode-go": {
+      "models": {
+        "muse-spark-1.3-contributor": { "status": "active" }
+      }
+    },
+    "opencode": {
+      "models": {
+        "muse-spark-1.3-contributor-free": { "status": "active" }
+      }
+    }
+  },
+  "plugins": []
+}

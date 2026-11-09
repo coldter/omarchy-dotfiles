@@ -1,0 +1,167 @@
+# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+- id: ui-settings-general
+  name: "@deepseek-ai/dsh-client-ui-settings-general"
+  config:
+    welcomeNoticeVersion: 2026-09-28.1
+- id: llm-pi-ai
+  name: "@deepseek-ai/dsh-llm-pi-ai"
+  config:
+    providers:
+      # Command Code is not in pi-ai's installed catalog, so this route must
+      # name its protocol, endpoint, and models itself.
+      commandcode:
+        displayName: Command Code
+        apiKeyEnv: COMMANDCODE_API_KEY
+        api: openai-responses
+        baseURL: https://api.commandcode.ai/provider/v1
+        # DeepSeek behind Command Code: system prompts only (no developer
+        # role), no 24h prompt-cache retention, no strict tool schemas.
+        compat:
+          supportsDeveloperRole: false
+          supportsLongCacheRetention: false
+          supportsStrictMode: false
+          supportsMaxOutputTokens: true
+        models:
+          - id: deepseek/deepseek-v4.1-flash-fast
+            name: DeepSeek V4.1 Flash Fast
+            contextWindow: 1000000
+            maxTokens: 65536
+            input: [ text, image ]
+            # Only the levels the endpoint accepts. "off" is deliberately
+            # absent: DeepSeek cannot disable reasoning, and dsh offers only
+            # the levels the map declares.
+            reasoningEfforts:
+              low: low
+              high: high
+              max: max
+          - id: deepseek/deepseek-v4.1-flash
+            name: DeepSeek V4.1 Flash
+            contextWindow: 1000000
+            maxTokens: 65536
+            input: [ text, image ]
+            reasoningEfforts:
+              low: low
+              high: high
+              max: max
+      # Mistral is an installed pi-ai catalog route, so the native
+      # mistral-conversations protocol and endpoint are inherited. The catalog
+      # is stale, so every model below is spelled out explicitly with the
+      # capacities, modalities, and reasoning levels the live Mistral API
+      # accepts (verified against /v1/models and /v1/chat/completions).
+      mistral:
+        displayName: Mistral
+        apiKeyEnv: MISTRAL_API_KEY
+        models:
+          # Reasoning models that declare a thinking-level map dispatch
+          # reasoning_effort; models without one must not be marked reasoning,
+          # because pi-ai would fall back to prompt_mode, which Mistral rejects.
+          - id: mistral-large-4
+            name: Mistral Large 4
+            contextWindow: 1048576
+            maxTokens: 262144
+            input: [ text, image ]
+            # API supports low/medium/high only; reasoning cannot be disabled.
+            reasoningEfforts:
+              low: low
+              medium: medium
+              high: high
+          - id: mistral-large-2512
+            name: Mistral Large 3
+            contextWindow: 262144
+            maxTokens: 262144
+            input: [ text, image ]
+            reasoningEfforts: false
+          - id: mistral-medium-2604
+            name: Mistral Medium 3.5
+            contextWindow: 262144
+            maxTokens: 262144
+            input: [ text, image ]
+            reasoningEfforts:
+              off: none
+              high: high
+          - id: mistral-small-2603
+            name: Mistral Small 4
+            contextWindow: 262144
+            maxTokens: 256000
+            input: [ text, image ]
+            reasoningEfforts:
+              off: none
+              high: high
+          - id: ministral-14b-2512
+            name: Ministral 3 14B
+            contextWindow: 262144
+            maxTokens: 262144
+            input: [ text, image ]
+            reasoningEfforts: false
+          - id: codestral-2508
+            name: Codestral 25.08
+            contextWindow: 256000
+            maxTokens: 8192
+            input: [ text ]
+            reasoningEfforts: false
+          - id: zai-glm-5-3
+            name: GLM-5.3
+            contextWindow: 1048576
+            maxTokens: 131072
+            input: [ text ]
+            # API supports low/high/max only; reasoning cannot be disabled.
+            reasoningEfforts:
+              low: low
+              high: high
+              max: max
+          - id: zai-glm-5-3-flash
+            name: GLM-5.3-Flash
+            contextWindow: 1048576
+            maxTokens: 131072
+            input: [ text, image ]
+            reasoningEfforts:
+              low: low
+              high: high
+              max: max
+          - id: deepseek-v4-1-flash-1017
+            name: DeepSeek V4.1 Flash 1017
+            contextWindow: 1048576
+            maxTokens: 128000
+            input: [ text, image ]
+            # API supports none/low/high/xhigh/max; no medium or minimal.
+            reasoningEfforts:
+              off: none
+              low: low
+              high: high
+              xhigh: xhigh
+              max: max
+          - id: voxtral-small-2507
+            name: Voxtral Small
+            contextWindow: 32768
+            maxTokens: 32000
+            # Audio input is not a dsh modality; text only.
+            input: [ text ]
+            reasoningEfforts: false
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: commandcode
+    model: deepseek/deepseek-v4.1-flash-fast
+    reasoningEffort: max
+- id: agent-preset-registry
+  name: "@deepseek-ai/dsh-agent-preset-registry"
+  config:
+    default: standard
+    selectedDefault: ptc
+# Keep only Command Code and Mistral: disable the built-in DeepSeek route.
+- id: llm-deepseek
+  name: "@deepseek-ai/dsh-llm-deepseek-api-key"
+  disabled: true
+- id: llm-deepseek-account
+  name: "@deepseek-ai/dsh-llm-deepseek-account"
+  disabled: true
+- id: session-log-deepseek
+  name: "@deepseek-ai/dsh-session-log-deepseek"
+  config:
+    enabled: false
+- id: ui-conversation
+  name: "@deepseek-ai/dsh-client-ui-conversation"
+  config:
+    busyEnter: steer
