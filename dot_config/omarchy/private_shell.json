@@ -3,12 +3,50 @@
     "layout": {
       "center": [
         {
-          "id": "omarchy.clock",
+          "birthYear": 2000,
           "format": "dddd HH:mm",
           "formatAlt": "d MMMM 'W'ww yyyy",
-          "verticalFormat": "HH\n—\nmm",
-          "birthYear": 2000,
-          "lifeExpectancy": 50
+          "id": "omarchy.clock",
+          "lifeExpectancy": 50,
+          "verticalFormat": "HH\n—\nmm"
+        }
+      ],
+      "centerBegin": [
+        {
+          "id": "omarchy.indicators"
+        }
+      ],
+      "centerEnd": [
+        {
+          "cities": [
+            {
+              "name": "Kolkata",
+              "zone": "Asia/Kolkata"
+            },
+            {
+              "name": "Tokyo",
+              "zone": "Asia/Tokyo"
+            },
+            {
+              "name": "Los Angeles",
+              "zone": "America/Los_Angeles"
+            },
+            {
+              "name": "New York",
+              "zone": "America/New_York"
+            },
+            {
+              "name": "London",
+              "zone": "Europe/London"
+            }
+          ],
+          "id": "omarchy.elsewhen"
+        },
+        {
+          "id": "omarchy.weather"
+        },
+        {
+          "id": "omarchy.system-update"
         }
       ],
       "left": [
@@ -44,48 +82,18 @@
         {
           "id": "omarchy.power"
         }
-      ],
-      "centerBegin": [
-        {
-          "id": "omarchy.indicators"
-        }
-      ],
-      "centerEnd": [
-        {
-          "id": "omarchy.elsewhen",
-          "cities": [
-            {
-              "name": "Kolkata",
-              "zone": "Asia/Kolkata"
-            },
-            {
-              "name": "Tokyo",
-              "zone": "Asia/Tokyo"
-            },
-            {
-              "name": "Los Angeles",
-              "zone": "America/Los_Angeles"
-            },
-            {
-              "name": "New York",
-              "zone": "America/New_York"
-            },
-            {
-              "name": "London",
-              "zone": "Europe/London"
-            }
-          ]
-        },
-        {
-          "id": "omarchy.weather"
-        },
-        {
-          "id": "omarchy.system-update"
-        }
       ]
     },
     "position": "top",
     "transparent": true
+  },
+  "dock": {
+    "pinned": [
+      "org.gnome.Nautilus",
+      "omacalc",
+      "X",
+      "YouTube"
+    ]
   },
   "idle": {
     "lock": 300,
