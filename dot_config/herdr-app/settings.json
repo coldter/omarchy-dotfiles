@@ -6,5 +6,6 @@
   "font_ligatures": false,
   "minimum_contrast": 1,
   "theme": "matte-black",
-  "pane_scrollbars": false
+  "pane_scrollbars": false,
+  "font_size": 13
 }
