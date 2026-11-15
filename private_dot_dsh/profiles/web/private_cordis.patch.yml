@@ -45,6 +45,46 @@
               low: low
               high: high
               max: max
+      # GLM-5.3 from Command Code only speaks chat/completions: the responses
+      # endpoint rejects the flash model by name, and 5.3 refuses pi-ai's
+      # untyped input items ("input item is missing type"), which DeepSeek on
+      # the route above tolerates. dsh fixes the wire protocol per route, so
+      # both GLM models get their own route over the same endpoint and key.
+      # Verified live: streaming, stream_options.include_usage, function
+      # calls, image parts, and reasoning_effort low through max (off and
+      # minimal are refused — reasoning cannot be disabled).
+      commandcode-chat:
+        displayName: Command Code (chat)
+        apiKeyEnv: COMMANDCODE_API_KEY
+        api: openai-completions
+        baseURL: https://api.commandcode.ai/provider/v1
+        compat:
+          supportsDeveloperRole: false
+          supportsReasoningEffort: true
+          maxTokensField: max_tokens
+        models:
+          - id: zai-org/GLM-5.3
+            name: GLM-5.3
+            contextWindow: 1000000
+            maxTokens: 131072
+            input: [ text, image ]
+            reasoningEfforts:
+              low: low
+              medium: medium
+              high: high
+              xhigh: xhigh
+              max: max
+          - id: z-ai/glm-5.3-flash
+            name: GLM-5.3-Flash
+            contextWindow: 1048576
+            maxTokens: 131072
+            input: [ text, image ]
+            reasoningEfforts:
+              low: low
+              medium: medium
+              high: high
+              xhigh: xhigh
+              max: max
       # Mistral is an installed pi-ai catalog route, so the native
       # mistral-conversations protocol and endpoint are inherited. The catalog
       # is stale, so every model below is spelled out explicitly with the
