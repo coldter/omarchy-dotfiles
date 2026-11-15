@@ -142,8 +142,8 @@
 - id: agent-default-model
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
-    provider: commandcode
-    model: deepseek/deepseek-v4.1-flash-fast
+    provider: mistral
+    model: zai-glm-5-3
     reasoningEffort: max
 - id: agent-preset-registry
   name: "@deepseek-ai/dsh-agent-preset-registry"
