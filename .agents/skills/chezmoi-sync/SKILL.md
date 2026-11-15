@@ -81,6 +81,7 @@ Name decoding: source `private_shell.json` → target `shell.json` (`private_` =
 | `MM` on `.omp/agent/config.yml` / `.omp/plugins/*` | omp owns these — adopt live (`re-add ~/.omp`); `node_modules`/`bun.lock` stay untracked, rebuilt by `bun install`; README §4.8 |
 | `MM` on `.config/Code/User/settings.json` | VS Code UI writes it — adopt live (`re-add`), commit `vscode:` |
 | `MM` on `.config/herdr-app/settings.json` | herdr writes it — adopt live (`re-add`), commit `herdr:` |
+| `MM` on `.dsh/profiles/*/cordis.patch.yml` | dsh rewrites it (and `cordis.yml`) when its default model changes — mtime + newest dsh session's `model` field settle the direction; adopt live (`re-add`), commit `dsh:` |
 | `MM` on `hyprland.lua` / `openwhispr-binds.lua` | OpenWhispr's binds writer adds one blank line per rewrite — adopt live (`re-add`), commit `hypr:`. Header/load-line change → re-derive from the app (README §4.7); never `re-add` a stale header |
 | `MM` on a **directory** (e.g. `.pi/agent`, `.omp/agent`), mode-only diff | dir mode comes from the source dir **name** (`private_agent`); `chmod` is ignored and `re-add` ignores non-file entries — rename the source dir |
 | Unsure | show the per-file `chezmoi diff`, ask user: adopt (`re-add`) or reject (`apply`) |
@@ -145,6 +146,10 @@ git rev-list --left-right --count HEAD...@{u}          # expect 0 0
 ```
 
 `autoCommit` is NOT set in `chezmoi.toml`, so `re-add`/`edit` never commit — always commit explicitly.
+Committing via the eval `commit` namespace (codemode): `chezmoi re-add` writes carry no edit record, so
+`draft()` lists every adopted file under Review with nothing selected — `await d.take("<source-path>")`
+each one (or `only("dot_config/hypr/**")`) before `d.commit(...)`. Never `git add`/`git commit` here.
+
 If the worktree is still clean after `re-add`, nothing was adopted: do NOT create empty commits. `git status -sb` staying `## master...origin/master` with no push needed is the normal `apply`-only outcome.
 
 **Push 403 (`Permission to <repo> denied to <you>`)** → git uses `gh auth git-credential`, and gh
@@ -155,8 +160,11 @@ Unset it first:
 env -u GITHUB_TOKEN chezmoi git -- push
 ```
 
-If the active keyring account is not the repo owner (check `gh auth status`), mint the owner's token
-for this push only:
+`gh auth status` **with `GITHUB_TOKEN` set hides the keyring's active account** — it labels the env
+token as Active while `git credential fill` still returns the keyring user (`username=` probe). Both
+attempts can 403 (`denied to coldter` from the env PAT, then `denied to kickssss` from keyring). Diagnose
+with `env -u GITHUB_TOKEN gh auth status`, and when the keyring's active account is not the repo owner,
+mint the owner's token for this push only:
 
 ```bash
 TOKEN=$(env -u GITHUB_TOKEN gh auth token --user coldter)   # never echo $TOKEN
